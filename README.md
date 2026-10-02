@@ -94,6 +94,24 @@ headless start. Read [AGENTS.md](AGENTS.md) before you change code.
 
 </details>
 
+## This fork
+
+rozhabrev Houdini MCP keeps the tools of houdini-mcp as they are and adds
+three things:
+
+- **House rules.** How to build and check a scene that a person can read and
+  change: `src/bridge/rules.md`. The agent gets them when it connects, and
+  again with its first result.
+- **Pictures reach the agent.** `capture` sends each picture back as a small
+  JPEG through the bridge, so an agent on another machine sees what it built.
+- **Timelapse.** After each call that changes the scene, a frame of the
+  Houdini main window goes to `<project>/timelapse/screen/`, and render files
+  go to `<project>/timelapse/renders/`. Only the Houdini window is in the
+  frame. `capture` mode "timelapse" turns it on or off; `HOUDINIMCP_TIMELAPSE=0`
+  turns it off at start.
+
+Authors and licenses: [NOTICE](NOTICE).
+
 ## Credits
 
 Built on [blender-mcp](https://github.com/ahujasid/blender-mcp),

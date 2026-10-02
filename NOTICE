@@ -1,0 +1,23 @@
+rozhabrev Houdini MCP
+Copyright (c) 2026 Rodion Zhabrev
+
+Based on houdini-mcp by John Chedeville (JTCHE), MIT License:
+https://github.com/JTCHE/houdini-mcp
+Copyright (c) 2025 Capoom
+Copyright (c) 2026 John Chedeville
+
+houdini-mcp carries code from these MIT-licensed projects:
+- fxhoudinimcp by healkeiser (FXHoudini-MCP Contributors), https://github.com/healkeiser/fxhoudinimcp
+  The timelapse module (src/houdinimcp/handlers/timelapse.py) is ported from
+  our fork of fxhoudinimcp as well.
+- blender-mcp, https://github.com/ahujasid/blender-mcp
+- capoomgit/houdini-mcp, https://github.com/capoomgit/houdini-mcp
+- eetumartola/houdini-mcp, https://github.com/eetumartola/houdini-mcp
+- Houdini21MCP, https://github.com/orrzxz/Houdini21MCP
+
+Documentation engine: houdinimd-docs (NodebookMD) by John Chedeville, MIT
+License. It reads the help of the Houdini install on the user's machine. This
+repository holds no SideFX help pages.
+
+Houdini and SideFX are trademarks of SideFX Software Inc. This project is not
+affiliated with SideFX.

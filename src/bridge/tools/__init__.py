@@ -18,9 +18,14 @@ from mcp.server.mcpserver.utilities.func_metadata import FuncMetadata
 # name -> Tool, filled by build(). batch validates its steps against these.
 TOOLS = {}
 
+# The house rules go to the agent with the first result of this process. A
+# client can cut the server instructions short, and a result it always reads.
+RULES = {"text": "", "sent": False}
 
-def build() -> list:
+
+def build(rules: str = "") -> list:
     """Every tool module in this package, as MCP tools."""
+    RULES["text"] = rules
     for name in sorted(module.name for module in pkgutil.iter_modules(__path__)):
         module = importlib.import_module(f"{__name__}.{name}")
         tool = Tool.from_function(_guarded(module.tool), name=name,
@@ -78,10 +83,21 @@ def _guarded(function):
     def guarded(**arguments):
         given = {key: value for key, value in arguments.items() if value is not None}
         try:
-            return function(**given)
+            return _with_rules(function(**given))
         except ToolError:
             raise
         except Exception as error:
             raise ToolError(f"{type(error).__name__}: {error}") from error
 
     return guarded
+
+
+def _with_rules(result):
+    """The result, with the house rules after it the first time."""
+    if RULES["sent"] or not RULES["text"]:
+        return result
+    RULES["sent"] = True
+    rules = "Read these rules before your next call.\n\n" + RULES["text"]
+    if isinstance(result, list):
+        return result + [rules]
+    return f"{result}\n\n{rules}"

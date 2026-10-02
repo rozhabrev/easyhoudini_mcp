@@ -1,16 +1,11 @@
 """capture — look at the scene: a picture of the viewport, and the window state."""
+import base64
 import json
-import os
 from typing import Dict, List, Union
 
 from mcp.server.mcpserver import Image
 
 from ..connection import call
-
-# A picture larger than this goes back as a path, because the message that
-# holds it must stay small enough for the client to read.
-MAX_INLINE_BYTES = 1_500_000
-
 
 def tool(mode: str = "viewport", node: str = None, output: str = None,
          camera: str = None, direction: str = None, shading: str = None,
@@ -25,7 +20,8 @@ def tool(mode: str = "viewport", node: str = None, output: str = None,
          background: int = 96, reference: str = None, color_by: str = None,
          color_range: List[float] = None, fps: float = 24, contour: float = None,
          slab: List[Union[str, float]] = None,
-         vectors: float = None, settle: float = None) -> list[Image | str]:
+         vectors: float = None, settle: float = None, enabled: bool = None,
+         folder: str = None) -> list[Image | str]:
     """Make a picture of the scene and look at it.
 
     Use it to confirm your own work: numbers in a node do not tell you that the
@@ -54,6 +50,14 @@ def tool(mode: str = "viewport", node: str = None, output: str = None,
         "movie"    — `node` over `frames` or `frame_range` (the playbar
                      range) as an MP4 at `fps`, `resolution` [width] wide.
                      Returns the path; open it in a player.
+        "timelapse" — the record of this session. After each call that
+                     changes the scene, a frame of the Houdini main window
+                     goes to <project>/timelapse/screen/, and the files that
+                     render writes go to <project>/timelapse/renders/. Other
+                     windows, MPlay too, stay out of the frame. It is on by
+                     default and needs a saved scene. `enabled` turns it on
+                     or off, `folder` moves it ("" for the default). The call
+                     takes a frame now and returns the state.
         Both draw with an OpenGL ROP, with or without a window, over a flat
         grey `background` (0-255, 96 by default: smoke reads best on mid
         grey). `color_by` colours the points by an attribute, blue at the low
@@ -140,15 +144,21 @@ def tool(mode: str = "viewport", node: str = None, output: str = None,
                               "background": background, "reference": reference,
                               "color_by": color_by, "color_range": color_range,
                               "fps": fps, "contour": contour, "slab": slab,
-                              "vectors": vectors, "settle": settle},
+                              "vectors": vectors, "settle": settle,
+                              "enabled": enabled, "folder": folder},
                   timeout=300.0 + (settle or 0) * 1.5 * _count(frames))
 
-    contents = []
-    if mode not in ("flipbook", "movie"):
-        for path in _paths(result):
-            contents.append(_picture(path, result))
-    return [item for item in contents if item is not None] + \
-           [json.dumps(result, indent=2, default=str)]
+    return pictures(result) + [json.dumps(result, indent=2, default=str)]
+
+
+def pictures(result) -> list:
+    """The pictures of a capture result, taken out of its JSON.
+
+    The plugin sends each picture as a small JPEG: Houdini often runs on
+    another machine, where the path means nothing to this one.
+    """
+    return [Image(data=base64.b64decode(item["jpeg"]), format="jpeg")
+            for item in result.pop("inline", None) or []]
 
 
 def _count(frames) -> int:
@@ -160,28 +170,3 @@ def _count(frames) -> int:
         return int(abs(float(frames.get("end", frames["start"])) - float(frames["start"]))
                    / step) + 1
     return 1
-
-
-def _paths(result) -> list:
-    """Every file the capture wrote. A quad capture writes four."""
-    images = result.get("images")
-    if images:
-        return [image.get("filepath") for image in images if image.get("filepath")]
-    one = result.get("filepath") or result.get("path")
-    return [one] if one else []
-
-
-def _picture(path, result):
-    """The image itself when this machine can read it and it is small enough."""
-    if not os.path.exists(path):
-        result.setdefault("not_inline", []).append(
-            f"Houdini wrote {path}, and this machine cannot see it. "
-            f"Houdini runs somewhere else.")
-        return None
-    size = os.path.getsize(path)
-    if size > MAX_INLINE_BYTES:
-        result.setdefault("not_inline", []).append(
-            f"{path} is {size} bytes. Read it yourself, or capture a smaller "
-            f"one with resolution=[800, 450].")
-        return None
-    return Image(path=path)

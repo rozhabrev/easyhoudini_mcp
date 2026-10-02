@@ -1,5 +1,6 @@
 """The entry point: build the MCP server and run it on stdio."""
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from mcp.server.mcpserver import MCPServer
 
@@ -81,6 +82,11 @@ Rules of the house
 """
 
 
+# How the scene is built and checked. It lives in its own file so that a
+# person can read and change it without reading code.
+RULES = Path(__file__).with_name("rules.md").read_text(encoding="utf-8")
+
+
 @asynccontextmanager
 async def lifespan(server):
     yield {}
@@ -88,8 +94,8 @@ async def lifespan(server):
 
 
 def build() -> MCPServer:
-    return MCPServer("HoudiniMCP", instructions=INSTRUCTIONS, lifespan=lifespan,
-                     tools=tools.build())
+    return MCPServer("HoudiniMCP", instructions=INSTRUCTIONS + "\n" + RULES, lifespan=lifespan,
+                     tools=tools.build(RULES))
 
 
 def main():

@@ -7,24 +7,41 @@ A tool module holds:
     run(**params)  the work. Plain JSON in, plain JSON out.
 """
 import importlib
+import inspect
 import pkgutil
+import time
 
 import hou
+
+from ..handlers import timelapse
 
 MODULES = sorted(module.name for module in pkgutil.iter_modules(__path__))
 
 
 def dispatch(command: str, params: dict):
-    """Run one tool. Wraps a mutating tool in one undo group."""
+    """Run one tool. Wraps a mutating tool in one undo group, and tells the
+    timelapse when it ends."""
     if command not in MODULES:
         raise ValueError(f"Unknown tool '{command}'. This plugin has: {', '.join(MODULES)}. "
                          f"The bridge and the plugin are different versions: run the "
                          f"installer again and restart Houdini.")
     module = importlib.import_module(f"{__name__}.{command}")
-    if getattr(module, "MUTATES", False):
-        with hou.undos.group(f"MCP: {command}"):
-            return module.run(**params)
-    return module.run(**params)
+    if not getattr(module, "MUTATES", False):
+        return module.run(**params)
+    started = time.time()
+    with hou.undos.group(f"MCP: {command}"):
+        result = module.run(**params)
+    if inspect.isgenerator(result):
+        return _observed(command, params, result, started)
+    timelapse.after(command, params, started)
+    return result
+
+
+def _observed(command, params, generator, started):
+    """A call that waits in the event loop changes the scene when it ends."""
+    result = yield from generator
+    timelapse.after(command, params, started)
+    return result
 
 
 def as_list(value):

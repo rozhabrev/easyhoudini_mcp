@@ -6,7 +6,7 @@ from mcp.server.mcpserver import Image
 from mcp.server.mcpserver.exceptions import ToolError
 
 from ..connection import call, session_line
-from .capture import _picture, _paths
+from .capture import pictures as pictures_of
 
 
 def tool(operations: List[Dict[str, Any]]) -> list[Image | str]:
@@ -56,9 +56,6 @@ def tool(operations: List[Dict[str, Any]]) -> list[Image | str]:
         result = step.get("result")
         if step.get("tool") != "capture" or not isinstance(result, dict):
             continue
-        for path in _paths(result):
-            picture = _picture(path, result)
-            if picture is not None:
-                pictures.append(picture)
+        pictures.extend(pictures_of(result))
     report["_session"] = session_line()
     return pictures + [json.dumps(report, indent=2, default=str)]
