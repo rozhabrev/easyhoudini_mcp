@@ -162,5 +162,6 @@ Live session
   it. Send a tiny call first (the current frame), then decide. A closed
   connection means Houdini quit: reopen the last saved version yourself.
 - No full topology audit of a model with millions of polygons: check by parts.
-- While a simulation is in the displayed chain, do not jump far on the
-  timeline. Keep the display flag on a node without a simulation.
+- Never cook a simulation in memory. The cache node goes right after the
+  solver, the frames go to disk through `cook` mode "cache_write", and the
+  display flag sits on the cache read, never on the solver.

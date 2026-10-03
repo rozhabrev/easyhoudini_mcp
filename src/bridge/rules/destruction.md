@@ -17,10 +17,18 @@ Destruction (RBD)
 - Bullet solver: 2-4 substeps and more constraint iterations; many substeps
   only to diagnose. Let settled pieces sleep. Real scale; a big slow
   collapse gets slowed time (read the parameter name on the node page).
-- No errors on the dopnet means nothing. Cook 20-30 frames and look at several
-  frames, not one still; a long shot in parts of 100-150 frames. Look for
-  pieces passing through each other and pieces flying off.
+- Never cook a simulation in memory: not by the display flag, not by the
+  playbar, not by a cook of the solver. Put the cache node right after the
+  solver when you make it, write the frames to disk with `cook`
+  mode "cache_write", and look only at what the cache reads back. A
+  simulation in memory fills the RAM, is lost when Houdini quits, and cooks
+  again on every change upstream. The same for a fracture of more than a few
+  hundred pieces.
 - Cache RBD with rbdio, not filecache (filecache silently loses constraints
-  and proxies). Cache order: pieces, then dust, then smoke. Dust is emitted
-  from pieces with `length(v@v) > 3 && i@active`.
+  and proxies); pyro, FLIP and Vellum with filecache. Cache order: pieces,
+  then dust, then smoke. Dust is emitted from pieces with
+  `length(v@v) > 3 && i@active`.
+- No errors on the dopnet means nothing. Write a test cache of 20-30 frames
+  and look at several frames, not one still; a long shot in parts of 100-150
+  frames. Look for pieces passing through each other and pieces flying off.
 - The final shot: a low camera, 28-35 mm, motion blur on.
