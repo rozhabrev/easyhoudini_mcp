@@ -82,12 +82,25 @@ def _workable(node):
     return None
 
 
+# Nodes that can cook for minutes or quit Houdini when the viewer cooks them
+# with the parameters they have at creation. The display flag goes to them
+# only when the agent puts it there.
+HEAVY = re.compile(r"fracture|solver|dopnet|dopimport|sim|vellum|pyro|flip|"
+                   r"rbd|mpm|cache|ocean|crowd|karma|render", re.IGNORECASE)
+
+
+def heavy(node):
+    with contextlib.suppress(Exception):
+        return bool(HEAVY.search(node.type().name()))
+    return False
+
+
 def advance_display(node):
     """Put the display flag on `node` when it is the new end of the chain that
     the viewer draws: it has no outputs, and the node that holds the flag now
     feeds it. A side branch or a node in another chain keeps the flag where
     it is. Returns the node that got the flag, or None."""
-    if not isinstance(node, (hou.SopNode, hou.LopNode)):
+    if not isinstance(node, (hou.SopNode, hou.LopNode)) or heavy(node):
         return None
     if node.outputs() or node.isDisplayFlagSet():
         return None

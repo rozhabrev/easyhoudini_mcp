@@ -252,6 +252,11 @@ def take_view(label="", index=None):
     network = _work_network()
     if folder is None or viewer is None or network is None:
         return None
+    shown = network.displayNode()
+    if shown is None or shown.needsToCook():
+        # A flipbook cooks what it draws, and a heavy cook inside a flipbook
+        # quit Houdini once. The view takes only a scene that is cooked.
+        return None
     folder = os.path.join(folder, "view")
     path = os.path.join(folder, file_name(index or next_index(folder), label, ".jpg"))
     before = viewer.pwd()

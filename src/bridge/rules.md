@@ -80,8 +80,12 @@ Read a topic with the `rules` tool before its kind of work, once per session.
 - `scripting`: before `execute` or any Python or HScript sent to Houdini.
 
 Before you start
-- Work in a saved scene with a real path, never in untitled. Save a new version
-  before a render, a long cook or a simulation, and never write over an old one.
+- Work in a saved scene with a real path, never in untitled. Never write over
+  an old version.
+- Save a new version at the end of each stage, and before a render, a
+  fracture, a long cook or a simulation. Houdini can quit on a heavy cook,
+  and everything after the last save is lost: one run lost all its stages to
+  one crash on a fracture, because it never saved.
 - The timelapse records your work (capture mode "timelapse"). Send renders
   through `render`, so the timelapse keeps a copy. Renders go to files, not
   to MPlay.
