@@ -18,7 +18,7 @@ def tool(monkeypatch, name, run, mutates):
 def seen(timelapse, monkeypatch):
     calls = []
     monkeypatch.setattr(timelapse, "after",
-                        lambda command, params, started: calls.append((command, params)))
+                        lambda command, params, started, result=None, mark=None: calls.append((command, params)))
     return calls
 
 

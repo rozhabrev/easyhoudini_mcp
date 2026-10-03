@@ -51,12 +51,20 @@ def tool(mode: str = "viewport", node: str = None, output: str = None,
                      range) as an MP4 at `fps`, `resolution` [width] wide.
                      Returns the path; open it in a player.
         "timelapse" — the record of this session. After each call that
-                     changes the scene, a frame of the Houdini main window
-                     goes to <project>/timelapse/screen/, and the files that
-                     render writes go to <project>/timelapse/renders/. Other
-                     windows, MPlay too, stay out of the frame. It is on by
-                     default and needs a saved scene. `enabled` turns it on
-                     or off, `folder` moves it ("" for the default). The call
+                     changes the scene, the panes go to the node the call
+                     changed: the network editor opens its network, the
+                     display flag moves to the new end of the chain the
+                     viewer draws, and the viewer shows that network. Then a
+                     frame of the Houdini main window goes to
+                     <project>/timelapse/screen/, and a quick OpenGL picture
+                     of the whole scene from one still camera goes to
+                     <project>/timelapse/view/. The files that render writes
+                     go to <project>/timelapse/renders/. Other windows, MPlay
+                     too, stay out of the frame. It is on by default and
+                     needs a saved scene. `enabled` turns it on or off,
+                     `folder` moves it ("" for the default), `camera` gives
+                     the view track a camera node or USD camera prim ("" for
+                     the still camera that frames the whole scene). The call
                      takes a frame now and returns the state.
         Both draw with an OpenGL ROP, with or without a window, over a flat
         grey `background` (0-255, 96 by default: smoke reads best on mid

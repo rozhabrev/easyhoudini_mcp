@@ -10,20 +10,22 @@ the user asks for in the prompt wins over a rule: "build it in /obj" or
 "download the textures" means exactly that.
 
 Show your work on screen
-Houdini does not follow you. Work done through tools and scripts never moves
-the panes: the network editor stays on the network the person left open, the
-viewer keeps drawing the old display node. A person watching the screen, or
-the timelapse, then sees nothing from the first call to the final render. So:
+The person watches the work as a timelapse: after each call that changes the
+scene, the panes go to the node that the call changed, the display flag moves
+to the new end of the chain, and two frames are saved: the Houdini window and
+a quick OpenGL picture of the whole scene from one still camera. One call is
+one frame. So:
+- Build in small steps: one call for each visible step (a node and its
+  parameters, a wire, a material on a part). One execute that builds a whole
+  stage gives one frame, and the timelapse jumps from nothing to the result.
+- Build the chain in the order it flows, and end each step on the new last
+  node, so the viewer draws the scene as it grows.
 - At the start of each stage, open the network you build in:
-  `select(paths=[<first node of the stage>], show=True)`. It opens that
-  network in the network editor, frames the nodes, and points the viewer at it.
-- After each stage, show its result: `select(paths=[<OUT_ or last node>],
-  show=True, display=True)`, so the viewer draws what you just made, framed.
-  In /stage the display flag goes on the last LOP of the stage. Inside a SOP
-  Create the display flag is its output: put it only on the end of the chain,
-  and to look at a node in the middle use show without display.
-- Do this as part of the stage, not at the end: the steps between are what the
-  recording is for. Several small visible steps beat one big invisible script.
+  `select(paths=[<first node of the stage>], show=True)`. After each stage,
+  show its result: `select(paths=[<OUT_ or last node>], show=True,
+  display=True)`.
+- When the shot camera is set, give it to the still view:
+  `capture(mode="timelapse", camera=<camera>)`.
 
 Before you build: what you must know
 Five things decide the scene. Take each from the prompt, the attached

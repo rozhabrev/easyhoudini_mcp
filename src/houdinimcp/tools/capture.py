@@ -32,7 +32,7 @@ def run(mode="viewport", node=None, output=None, camera=None, direction=None,
     if mode not in MODES:
         raise unknown_mode(mode, MODES)
     if mode == "timelapse":
-        return timelapse.configure(enabled=enabled, folder=folder)
+        return timelapse.configure(enabled=enabled, folder=folder, camera=camera)
     if mode in ("sheet", "movie"):
         # An OpenGL ROP draws these with or without a window, so the call is
         # the same in both.

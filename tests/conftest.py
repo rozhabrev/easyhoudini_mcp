@@ -47,8 +47,9 @@ def hou():
 def timelapse(hou):
     from houdinimcp.handlers import timelapse
     timelapse.STATE.update(enabled=True, folder=None, timer=None, pending_since=None,
-                           pending_label="", last_shot=None, shots=0, renders=0,
-                           last_error=None)
+                           pending_label="", pending_node=None, last_node=None,
+                           last_shot=None, shots=0, renders=0, views=0, camera=None,
+                           view_box=None, followed=None, last_error=None)
     return timelapse
 
 
