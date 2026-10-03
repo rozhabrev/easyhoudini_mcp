@@ -127,3 +127,44 @@ def set_selection(paths):
     for n in nodes:
         n.setSelected(True)
     return {"selected": [n.path() for n in nodes]}
+
+
+def show(paths, display=False):
+    """Put the work in front of the person: the network editor opens the
+    network of the first node and frames the nodes, the scene viewer shows that
+    network and frames what it draws. The agent works through code, and the
+    panes never follow it on their own: without this a screen recording shows
+    an empty network and an old picture for the whole session.
+
+    display: also move the display flag to the first node, so the viewer draws
+    its result. Off by default, because it changes what the scene outputs.
+    """
+    set_selection(paths)
+    node = hou.node(paths[0])
+    shown = {"network": node.parent().path(), "display": None, "viewer": None}
+    if display and hasattr(node, "setDisplayFlag"):
+        node.setDisplayFlag(True)
+        shown["display"] = node.path()
+    if not hou.isUIAvailable():
+        shown["note"] = "No Houdini window: nothing to show."
+        return shown
+    editor = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if editor:
+        editor.setCurrentNode(node)
+        try:
+            editor.homeToSelection()
+        except (AttributeError, hou.Error):
+            pass
+    viewer = hou.ui.paneTabOfType(hou.paneTabType.SceneViewer)
+    if viewer:
+        try:
+            viewer.setPwd(node.parent())
+            port = viewer.curViewport()
+            if isinstance(node, hou.LopNode):
+                port.frameAll()
+            else:
+                port.frameSelected()
+            shown["viewer"] = viewer.pwd().path()
+        except hou.Error as error:
+            shown["note"] = f"The viewer could not show it: {error}"
+    return shown

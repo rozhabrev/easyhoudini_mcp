@@ -54,3 +54,21 @@ def test_a_call_in_stage_brings_the_usd_and_look_topics_once(monkeypatch):
     assert "USD pipeline" in first and "Karma Material Builder" in first
     assert tools._with_topics("ok", "node_edit", {"parent": "/stage"}) == "ok"
     assert "Scripting" in tools._with_topics("ok", "execute", {"code": "x"})
+
+
+def test_the_core_tells_the_agent_to_show_its_work():
+    from bridge import cli
+    assert "Show your work on screen" in cli.RULES
+    assert cli.RULES.index("Show your work") < cli.RULES.index("Before you build")
+
+
+def test_select_sends_show_only_when_asked(monkeypatch):
+    from bridge import tools
+    from bridge.tools import select
+    tools.build("")
+    sent = []
+    monkeypatch.setattr(select, "call_json", lambda name, params: sent.append(params) or "{}")
+    select.tool(paths=["/stage/a"])
+    select.tool(paths=["/stage/a"], show=True)
+    assert sent == [{"paths": ["/stage/a"]},
+                    {"paths": ["/stage/a"], "show": True, "display": False}]

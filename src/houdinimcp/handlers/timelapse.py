@@ -260,7 +260,10 @@ def copy_render(path, frame_range, started):
 
 def after(command, params, started):
     """Called after each call of a tool with MUTATES that did not fail."""
-    if command in SKIP or not is_enabled():
+    if not is_enabled():
+        return
+    # select with show turns the panes to the work: that is what a frame is for.
+    if command in SKIP and not (command == "select" and params.get("show")):
         return
     if command == "render" and params.get("mode", "start") == "start":
         try:
