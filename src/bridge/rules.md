@@ -27,9 +27,18 @@ Build
   base with a transition, a shaft that tapers to the top, a capital, smooth
   joins. A stack of cylinders reads as "a bar with lumps on it" and is a
   failure.
-- Use a ready node when one does the job. Use VEX for complex parametric
-  geometry that nodes make awkward; prefer simple nodes otherwise. Inside the
-  scene logic is VEX; Python is for files and the outside world.
+- Nodes first, VEX last. Select a part with a node (Group by normal
+  direction, bounding box or object, Group Expression), then change it with a
+  node (Mountain, Peak, Soft Transform, Smooth, Transform) limited to that
+  group. Example: a ragged bottom on a tube is Group by normal (0,-1,0) plus
+  Mountain on that group, not a wrangle. Points come from Scatter, Circle,
+  Line or Copy, profiles from Curve or Line, names from Name, UVs from UV
+  Project, UV Flatten or a triplanar in the material.
+- VEX only when no node does the job, and then procedural: read ch() and
+  relative measures (relbbox, getbbox), never fixed coordinates or point
+  numbers (`@P.y < -0.3` breaks as soon as a size changes). Never paste the
+  same wrangle twice: build it once and reuse its output. Inside the scene
+  logic is VEX; Python is for files and the outside world.
 - One wrangle does one step (one sets the attributes, the next applies them),
   so the user can bypass and recombine them by hand.
 - Fuse after each merge and boolean. Boolean fails on touching or coplanar
@@ -50,7 +59,11 @@ Network order
 - The network is made of blocks. A block ends in a null `OUT_<what>`; the next
   block starts with an object_merge of that OUT_. No long trees, no wires
   across blocks.
-- One numbered network box per stage (`01_REFERENCE`, `02_BLOCKOUT`, ...).
+- Every block sits in a network box with a plain title of what it is
+  (`03_COLUMNS`, `04_TREES`, `07_FRACTURE`). Every node you create gets its
+  own place: lay out each batch of new nodes right after you build it, never
+  leave nodes at the origin or on top of each other. Before you finish, check
+  that no two nodes share a position and no node is outside a box.
 - Colours: green OUT_, blue inputs and imports, yellow CTRL, purple caches,
   red broken, grey parked. Dot nodes only for long wires.
 - Write a comment on a node that reads another node by a path: a path has no
@@ -88,6 +101,22 @@ Live session
   Warn before anything that can take more than a minute.
 - While a simulation is in the displayed chain, do not jump far on the
   timeline.
+
+Scene structure (USD)
+- Build to USD standards in /stage, in two graphs side by side. The test
+  graph: each part is built in its own SOP Create and checked statically in
+  the stage (one frame, how it looks and renders), never played back there.
+  When a part is approved, write it to USD from right there (a USD ROP after
+  the SOP Create, to $HIP/usd/<part>.usd) and bring that file into the final
+  graph with a Reference or Sublayer LOP. The final graph reads only caches,
+  so it plays fast.
+- Destruction, ocean, hair, feathers and crowds go to the render through the
+  Houdini Procedural LOPs (`houdinirbdprocedural` and its siblings): cache
+  the simulation points, not animated geometry. Read
+  `solaris/houdini_rbd_procedural` first: it needs `path`, `name` and
+  `piecename` set up exactly as described there.
+- One COP network `textures` for the whole scene; group its chains in
+  network boxes by material.
 
 Look and render (our defaults)
 - The final scene is assembled in Solaris (/stage): materials, lights, camera
