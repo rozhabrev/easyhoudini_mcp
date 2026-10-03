@@ -22,8 +22,8 @@ Destruction (RBD)
   solver when you make it, write the frames to disk with `cook`
   mode "cache_write", and look only at what the cache reads back. A
   simulation in memory fills the RAM, is lost when Houdini quits, and cooks
-  again on every change upstream. The same for a fracture of more than a few
-  hundred pieces.
+  again on every change upstream. The same for every fracture: a File Cache
+  (or rbdio) right after it, and the solver reads the cache.
 - Cache RBD with rbdio, not filecache (filecache silently loses constraints
   and proxies); pyro, FLIP and Vellum with filecache. Cache order: pieces,
   then dust, then smoke. Dust is emitted from pieces with

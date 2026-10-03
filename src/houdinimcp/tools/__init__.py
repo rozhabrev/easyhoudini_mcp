@@ -13,7 +13,7 @@ import time
 
 import hou
 
-from ..handlers import timelapse
+from ..handlers import autosave, timelapse
 
 MODULES = sorted(module.name for module in pkgutil.iter_modules(__path__))
 
@@ -29,12 +29,14 @@ def dispatch(command: str, params: dict):
     if not getattr(module, "MUTATES", False):
         return module.run(**params)
     started = time.time()
+    autosave.before(command, params)
     mark = timelapse.before(command)
     with hou.undos.group(f"MCP: {command}"):
         result = module.run(**params)
     if inspect.isgenerator(result):
         return _observed(command, params, result, started, mark)
     timelapse.after(command, params, started, result, mark)
+    autosave.after(command)
     return result
 
 
@@ -42,6 +44,7 @@ def _observed(command, params, generator, started, mark):
     """A call that waits in the event loop changes the scene when it ends."""
     result = yield from generator
     timelapse.after(command, params, started, result, mark)
+    autosave.after(command)
     return result
 
 

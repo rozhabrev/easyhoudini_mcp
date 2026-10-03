@@ -160,8 +160,14 @@ Live session
 - Do not touch the mouse or the screen of the machine.
 - A timeout is not a failure: Houdini still cooks, and a new call waits behind
   it. Send a tiny call first (the current frame), then decide. A closed
-  connection means Houdini quit: reopen the last saved version yourself.
+  connection means Houdini quit: reopen the last saved version yourself, or
+  the newest autosave in `$HIP/backup/` when it is newer.
 - No full topology audit of a model with millions of polygons: check by parts.
-- Never cook a simulation in memory. The cache node goes right after the
-  solver, the frames go to disk through `cook` mode "cache_write", and the
-  display flag sits on the cache read, never on the solver.
+- Never cook a heavy step in memory: a simulation, a fracture, a conversion
+  to VDB or from it, a remesh, a boolean or a scatter on a dense model, any
+  step that cooks for more than a few seconds. The cache node goes right
+  after it when you make it (rbdio for RBD, File Cache for the rest), the
+  result goes to disk through `cook` mode "cache_write", and the chain below
+  and the display flag read the cache, never the heavy node. A heavy step in
+  memory fills the RAM, is lost when Houdini quits, cooks again on every
+  change upstream, and has quit Houdini in a run.
