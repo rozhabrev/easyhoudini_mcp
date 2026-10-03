@@ -121,9 +121,8 @@ Scene structure (USD)
 Look and render (our defaults)
 - The final scene is assembled in Solaris (/stage): materials, lights, camera
   and render settings live in LOPs. Do not render from /obj or /out.
-- Simple geometry (low poly, blockouts, product shots) is built right in
-  /stage in a SOP Create LOP. Do not build it in /obj and pull it in with a
-  SOP Import. Heavy SOP work (simulations, caches) may stay in /obj.
+- Geometry is built right in /stage in SOP Create LOPs. Do not build it in
+  /obj and pull it in with a SOP Import.
 - Main LOP chain: geometry -> material library -> merge_lights -> camera ->
   render. Lights are a separate block on the side (each light its own node,
   or a short chain of lights) that comes into the main chain through a Merge
