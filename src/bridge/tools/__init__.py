@@ -28,7 +28,9 @@ def build(rules: str = "") -> list:
     RULES["text"] = rules
     for name in sorted(module.name for module in pkgutil.iter_modules(__path__)):
         module = importlib.import_module(f"{__name__}.{name}")
-        tool = Tool.from_function(_guarded(module.tool), name=name,
+        if not hasattr(module, "tool"):
+            continue
+        tool = Tool.from_function(_guarded(module.tool, name), name=name,
                                   annotations=getattr(module, "ANNOTATIONS", None))
         # An argument that the tool does not take is refused, not dropped: a
         # dropped filter returns everything and reads as a filter that matched.
@@ -64,7 +66,7 @@ def validate(name: str, params: dict) -> None:
     tool.fn_metadata.validate_arguments(params)
 
 
-def _guarded(function):
+def _guarded(function, name: str = ""):
     """The tool function, with two rules that every tool shares.
 
     An optional argument accepts null and then takes its default: a client
@@ -83,13 +85,30 @@ def _guarded(function):
     def guarded(**arguments):
         given = {key: value for key, value in arguments.items() if value is not None}
         try:
-            return _with_rules(function(**given))
+            return _with_topics(_with_rules(function(**given)), name, given)
         except ToolError:
             raise
         except Exception as error:
             raise ToolError(f"{type(error).__name__}: {error}") from error
 
     return guarded
+
+
+def _with_topics(result, name: str, arguments: dict):
+    """The result, with the rules of each topic this call works in and the
+    agent has not read yet."""
+    from . import topics
+    due = topics.due(name, arguments)
+    if not due:
+        return result
+    for topic in due:
+        topics.mark_sent(topic)
+    text = "This call works in a topic of the house rules that you have not " \
+           "read. Read it before your next call.\n\n" + \
+           "\n\n".join(topics.read(topic) for topic in due)
+    if isinstance(result, list):
+        return result + [text]
+    return f"{result}\n\n{text}"
 
 
 def _with_rules(result):

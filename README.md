@@ -100,8 +100,14 @@ rozhabrev Houdini MCP keeps the tools of houdini-mcp as they are and adds
 three things:
 
 - **House rules.** How to build and check a scene that a person can read and
-  change: `src/bridge/rules.md`. The agent gets them when it connects, and
-  again with its first result.
+  change. The core, `src/bridge/rules.md`, says what the agent must know
+  before it builds, when it stops and asks the user, and when it reads the
+  docs instead; the agent gets it when it connects, and again with its first
+  result. The detail for each kind of work (modeling, USD, look and render,
+  destruction, scripting) is a topic in `src/bridge/rules/`, read with the
+  `rules` tool. A call that works in a topic the agent has not read (a node
+  in /stage, an RBD setup, a Python script) brings that topic with its
+  result.
 - **Pictures reach the agent.** `capture` sends each picture back as a small
   JPEG through the bridge, so an agent on another machine sees what it built.
 - **Timelapse.** After each call that changes the scene, a frame of the

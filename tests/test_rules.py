@@ -17,8 +17,40 @@ def test_a_list_result_gets_the_rules_as_its_own_item(monkeypatch):
     assert tools._with_rules(["picture", "{}"])[-1].endswith("R")
 
 
-def test_the_server_carries_the_rules():
+def test_the_server_carries_the_core_rules():
     from bridge import cli
-    assert "revolving a profile" in cli.RULES
-    assert "outside breaks first" in cli.RULES
+    assert "When to stop and ask" in cli.RULES
+    assert "Topics" in cli.RULES
     assert cli.RULES in cli.build().instructions
+
+
+def test_every_topic_named_in_the_core_has_a_file():
+    from bridge import cli
+    from bridge.tools import topics
+    assert set(topics.names()) == {"modeling", "usd", "look", "destruction", "scripting"}
+    for name in topics.names():
+        assert f"`{name}`" in cli.RULES
+    assert "revolving a profile" in topics.read("modeling")
+    assert "outside breaks first" in topics.read("destruction")
+
+
+def test_the_rules_tool_reads_a_topic_and_names_the_topics_for_a_wrong_one(monkeypatch):
+    from bridge import tools
+    from bridge.tools import topics
+    tools.build("")
+    monkeypatch.setattr(topics, "SENT", set())
+    call = tools.TOOLS["rules"].fn
+    assert "Karma Material Builder" in call(topic="look")
+    assert "Topics: destruction, look" in call(topic="lighting")
+
+
+def test_a_call_in_stage_brings_the_usd_and_look_topics_once(monkeypatch):
+    from bridge import tools
+    from bridge.tools import playbar, topics
+    tools.build("")
+    monkeypatch.setattr(topics, "SENT", set())
+    assert "Studio" not in tools._with_topics("ok", "playbar", {"mode": "get"})
+    first = tools._with_topics("ok", "node_edit", {"parent": "/stage"})
+    assert "USD pipeline" in first and "Karma Material Builder" in first
+    assert tools._with_topics("ok", "node_edit", {"parent": "/stage"}) == "ok"
+    assert "Scripting" in tools._with_topics("ok", "execute", {"code": "x"})
