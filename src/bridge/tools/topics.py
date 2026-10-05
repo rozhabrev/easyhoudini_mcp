@@ -15,6 +15,7 @@ TRIGGERS = {
     "usd": ("/stage", "usd", "sopcreate", "lopnet"),
     "look": ("/stage", "karma", "materiallibrary", "mtlx", "copnet"),
     "destruction": ("rbd", "fracture", "bullet"),
+    "pdg": ("topnet", "render_setup", "ropfetch", "wedge", "localscheduler"),
 }
 
 

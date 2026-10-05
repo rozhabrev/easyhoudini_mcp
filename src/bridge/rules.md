@@ -77,6 +77,8 @@ Read a topic with the `rules` tool before its kind of work, once per session.
   payloads, instancing, caches. Read it with `look` before the first LOP.
 - `look`: materials, COP textures, lights, camera, Karma render setup.
 - `destruction`: RBD fracture, constraints, the bullet solver, its caches.
+- `pdg`: several renders at once (cameras, render settings, quality levels)
+  and anything in a TOP network.
 - `scripting`: before `execute` or any Python or HScript sent to Houdini.
 
 Before you start

@@ -27,7 +27,7 @@ def test_the_server_carries_the_core_rules():
 def test_every_topic_named_in_the_core_has_a_file():
     from bridge import cli
     from bridge.tools import topics
-    assert set(topics.names()) == {"modeling", "usd", "look", "destruction", "scripting"}
+    assert set(topics.names()) == {"modeling", "usd", "look", "destruction", "scripting", "pdg"}
     for name in topics.names():
         assert f"`{name}`" in cli.RULES
     assert "revolving a profile" in topics.read("modeling")

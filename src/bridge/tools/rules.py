@@ -19,6 +19,7 @@ def tool(topic: str) -> str:
         look         materials, COP textures, lights, camera, Karma render
         destruction  RBD fracture, constraints, the bullet solver, caches
         scripting    before Python or HScript sent to Houdini
+        pdg          several renders at once, anything in a TOP network
 
     Read a topic once per session. Work in /stage needs both usd and look.
     """
