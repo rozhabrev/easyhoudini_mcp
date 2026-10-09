@@ -1,10 +1,9 @@
-# Houdini MCP
+# rozhabrev Houdini MCP
 
-<img src="https://raw.githubusercontent.com/JTCHE/houdini-mcp/main/public/cover.png" alt="An illustration titled &quot;Houdini MCP&quot;, showing multiple agentic platforms connected to Houdini, symbolizing a link" />
+<img src="https://raw.githubusercontent.com/rozhabrev/<REPO>/main/public/cover.png" alt="An illustration titled &quot;Houdini MCP&quot;, showing multiple agentic platforms connected to Houdini, symbolizing a link" />
 
 
-  <a href="https://pypi.org/project/houdini-mcp-server/"><img src="https://img.shields.io/pypi/v/houdini-mcp-server?color=blue" alt="PyPI Version"/></a>
-  <a href="https://github.com/JTCHE/houdini-mcp/blob/main/LICENSE"><img src="https://img.shields.io/github/license/JTCHE/houdini-mcp?color=blue" alt="License: MIT"/></a>
+  <a href="https://github.com/rozhabrev/<REPO>/blob/main/LICENSE"><img src="https://img.shields.io/github/license/rozhabrev/<REPO>?color=blue" alt="License: MIT"/></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white" alt="Python 3.10+"/></a>
   <a href="https://modelcontextprotocol.io/"><img src="https://img.shields.io/badge/MCP-compatible-green" alt="MCP Compatible"/></a>
   <a href="https://www.sidefx.com/"><img src="https://img.shields.io/badge/Houdini-22.0-orange" alt="Houdini 22.0"/></a>
@@ -19,19 +18,19 @@ This MCP provides **Full Markdown Documentation** and **Viewport Screenshots** s
 **Windows**
 
 ```powershell
-powershell -c "irm https://raw.githubusercontent.com/JTCHE/houdini-mcp/main/bootstrap.bat -OutFile bootstrap.bat; .\bootstrap.bat"
+powershell -c "irm https://raw.githubusercontent.com/rozhabrev/<REPO>/main/bootstrap.bat -OutFile bootstrap.bat; .\bootstrap.bat"
 ```
 
 **macOS / Linux**
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/JTCHE/houdini-mcp/main/bootstrap.sh | bash
+curl -sSL https://raw.githubusercontent.com/rozhabrev/<REPO>/main/bootstrap.sh | bash
 ```
 
 **uv**
 
 ```bash
-uv tool install houdini-mcp-server && houdinimcp-install
+uv tool install git+https://github.com/rozhabrev/<REPO> && houdinimcp-install
 ```
 
 The installer adds the plugin to Houdini and the server to your AI clients of choice. Restart both.\
@@ -87,8 +86,8 @@ Manual client setup: run `houdinimcp-bridge` with no arguments.
 
 From a clone: `uv run python -m bridge.onboarding.install`.
 
-Layout: `src/houdinimcp/` is the plugin, a TCP server inside Houdini on
-`localhost:9877`. `src/bridge/` is the MCP server and the installer. Messages
+Layout: `src/houdinimcp/` is the plugin, a TCP server inside Houdini on a
+free localhost port that it announces to the bridge. `src/bridge/` is the MCP server and the installer. Messages
 are JSON with a 4-byte length prefix. `HOUDINIMCP_NO_HEADLESS=1` stops the
 headless start. Read [AGENTS.md](AGENTS.md) before you change code.
 
@@ -115,6 +114,21 @@ three things:
   go to `<project>/timelapse/renders/`. Only the Houdini window is in the
   frame. `capture` mode "timelapse" turns it on or off; `HOUDINIMCP_TIMELAPSE=0`
   turns it off at start.
+
+Version 0.3 adds, from a session where the agent built in the wrong place
+and the console filled with errors (see [CHANGELOG](CHANGELOG.md)):
+
+- **Which rule wins, and where to build.** The words of the user, then what
+  was given (a scene, a node), then the core, then a topic. Given a node, the
+  agent builds next to it in a subnet and leaves the flags of the user alone.
+  "By hand" means fixed geometry, not a setup with controls. After each
+  result it shows a picture and asks before it goes on.
+- **An error log.** Every failed call goes to `errors.jsonl` in the data folder
+  of the bridge; `houdinimcp-bridge errors` counts them by signature. The
+  frequent ones come back with a hint, the same error twice with a note to
+  stop guessing, and ten changes without a save with a note to save.
+- **A stop that works from afar.** `session(action="interrupt")` goes over the
+  socket, so it reaches a Houdini on another machine.
 
 Authors and licenses: [NOTICE](NOTICE).
 

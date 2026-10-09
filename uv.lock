@@ -282,7 +282,7 @@ wheels = [
 
 [[package]]
 name = "houdini-mcp-server"
-version = "0.6.0"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "houdinimd-docs" },

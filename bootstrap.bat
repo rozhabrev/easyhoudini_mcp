@@ -6,7 +6,7 @@ REM Puts uv on the machine, installs the houdinimcp package from PyPI, then
 REM hands over to the installer, which does the Houdini plugin and the MCP
 REM client configuration.
 REM
-REM Fresh install:        powershell -c "irm https://raw.githubusercontent.com/JTCHE/houdini-mcp/main/bootstrap.bat -OutFile bootstrap.bat; .\bootstrap.bat"
+REM Fresh install:        powershell -c "irm https://raw.githubusercontent.com/rozhabrev/<REPO>/main/bootstrap.bat -OutFile bootstrap.bat; .\bootstrap.bat"
 REM From inside a clone:  bootstrap.bat          (uses the code in the clone)
 REM No questions:         bootstrap.bat --yes
 REM Every installer flag is passed through: bootstrap.bat --houdini-version 22.0 --harness codex
@@ -35,8 +35,8 @@ if defined IN_REPO (
     exit /b !errorlevel!
 )
 
-echo [..]   Installing houdini-mcp-server from PyPI...
-uv tool install --force houdini-mcp-server || exit /b 1
+echo [..]   Installing rozhabrev Houdini MCP from GitHub...
+uv tool install --force git+https://github.com/rozhabrev/<REPO> || exit /b 1
 echo [OK]   Installed
 houdinimcp-install %*
 exit /b !errorlevel!

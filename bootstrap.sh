@@ -5,7 +5,7 @@
 # over to the installer, which does the Houdini plugin and the MCP client
 # configuration.
 #
-# Fresh install:        curl -sSL https://raw.githubusercontent.com/JTCHE/houdini-mcp/main/bootstrap.sh | bash
+# Fresh install:        curl -sSL https://raw.githubusercontent.com/rozhabrev/<REPO>/main/bootstrap.sh | bash
 # From inside a clone:  bash bootstrap.sh          (uses the code in the clone)
 # No questions:         bash bootstrap.sh --yes
 # Every installer flag is passed through: bash bootstrap.sh --houdini-version 22.0 --harness codex
@@ -34,8 +34,8 @@ if [ -f "pyproject.toml" ] && [ -f "houdini_mcp_server.py" ]; then
     ok "Inside the repository — installing from this clone"
     uv run python -m bridge.onboarding.install "$@"
 else
-    step "Installing houdini-mcp-server from PyPI..."
-    uv tool install --force houdini-mcp-server
+    step "Installing rozhabrev Houdini MCP from GitHub..."
+    uv tool install --force git+https://github.com/rozhabrev/<REPO>
     ok "Installed"
     houdinimcp-install "$@"
 fi

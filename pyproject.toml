@@ -1,12 +1,12 @@
 [project]
 name = "houdini-mcp-server"
-version = "0.6.0"
+version = "0.3.0"
 description = "Connect AI Agents to SideFX Houdini, with full documentation and screenshot support."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]
-authors = [{ name = "John Chedeville" }]
+authors = [{ name = "Rodion Zhabrev" }, { name = "John Chedeville" }]
 keywords = ["houdini", "sidefx", "mcp", "model-context-protocol", "vfx", "3d"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -24,8 +24,8 @@ dependencies = [
 # The repository URL lives here. Everything that needs it reads it from here,
 # except the bootstrap scripts, which run before the repository exists.
 [project.urls]
-Repository = "https://github.com/JTCHE/houdini-mcp"
-Issues = "https://github.com/JTCHE/houdini-mcp/issues"
+Repository = "https://github.com/rozhabrev/<REPO>"
+Issues = "https://github.com/rozhabrev/<REPO>/issues"
 
 [build-system]
 requires = ["hatchling"]
