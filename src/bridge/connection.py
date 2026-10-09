@@ -488,15 +488,31 @@ def connection(auto_start: bool = True) -> Connection:
 def interrupt(port: int = None) -> str:
     """Ask the plugin on a port to stop the call that runs there now.
 
-    The plugin cannot read the socket while a call holds it, so the request is
-    a file that its watchdog looks for.
+    The request goes over a new connection: a thread of the plugin reads it
+    while the call holds the main thread of Houdini, so it reaches a Houdini
+    on another machine through the same tunnel as the calls. A plugin older
+    than that thread does not answer it; then the bridge writes the
+    interrupt file that the watchdog of the plugin looks for, which works
+    only when the plugin runs on this machine.
     """
     port = port or (_connection.port if _connection else None) or _attached_port
-    if not port or not any(entry["port"] == port for entry in protocol.sessions()):
-        raise HoudiniError(f"No Houdini announced port {port}. Call session with "
-                           f"action='list' and give the port.")
-    with open(protocol.interrupt_file(port), "w"):
-        pass
+    if not port:
+        raise HoudiniError("No Houdini is attached. Call session with action='list' and "
+                           "give the port.")
+    answer = _ask_to_stop(port)
+    if answer is None:
+        if not any(entry["port"] == port for entry in protocol.sessions()):
+            raise HoudiniError(f"The Houdini on port {port} did not take the stop, and "
+                               f"no Houdini on this machine announced that port. Call "
+                               f"session with action='list' and give the port.")
+        os.makedirs(os.path.dirname(protocol.interrupt_file(port)), exist_ok=True)
+        with open(protocol.interrupt_file(port), "w"):
+            pass
+    elif answer.get("status") == "error":
+        raise HoudiniError(f"Houdini on port {port} refused the stop: "
+                           f"{answer.get('message')}")
+    elif not (answer.get("result") or {}).get("stopping"):
+        return f"Houdini on port {port} runs no call now: there is nothing to stop."
     # Give the call time to stop, so the report says whether Houdini is back.
     deadline = time.monotonic() + 6.0
     while time.monotonic() < deadline:
@@ -510,6 +526,18 @@ def interrupt(port: int = None) -> str:
             f"long call into Houdini, such as one cook, ends before the stop can act; a "
             f"script that catches BaseException in a loop never lets it act. Wait and call "
             f"session action='status'.")
+
+
+def _ask_to_stop(port: int, host: str = "localhost", wait: float = 5.0):
+    """Send "interrupt" on a connection of its own. The answer, or None when
+    the plugin does not answer it (an older plugin, or no plugin)."""
+    try:
+        with socket.create_connection((host, port), timeout=wait) as sock:
+            sock.settimeout(wait)
+            sock.sendall(protocol.encode({"type": "interrupt", "params": {}}))
+            return protocol.receive(sock)
+    except (OSError, ValueError):
+        return None
 
 
 def detach() -> dict:

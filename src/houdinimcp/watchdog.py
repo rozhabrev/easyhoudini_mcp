@@ -74,6 +74,12 @@ class watch:
                 continue
 
 
+def current():
+    """The name of the call that runs now, or None."""
+    with _lock:
+        return _current["command"] if _current else None
+
+
 def budget(seconds):
     """Give the call that runs now a time budget, counted from now."""
     with _lock:
