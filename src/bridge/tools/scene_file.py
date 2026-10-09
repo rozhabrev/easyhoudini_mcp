@@ -7,8 +7,8 @@ from ..connection import call_json
 
 ANNOTATIONS = ToolAnnotations(destructiveHint=True)
 
-# Порядок в сети проверяется кодом, не только правилом: агент сложил 27 нод
-# в одну точку и не сделал ни одного бокса (стандартный тест 03.10.2026).
+# The network order is checked in code, not only by a rule: in a test run an
+# agent stacked 27 nodes on one spot and made no network box at all.
 _LAYOUT_AUDIT = r'''
 import json, collections
 report = []
@@ -36,7 +36,7 @@ def _layout_check():
                                                "timeout": 30}, timeout=60.0))
         text = out.get("stdout") or out.get("output") or ""
         return json.loads(text.strip().splitlines()[-1]) if text.strip() else []
-    except Exception as error:  # проверка не должна ломать сохранение
+    except Exception as error:  # the check must never break the save
         return [{"error": str(error)}]
 
 

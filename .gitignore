@@ -27,4 +27,4 @@ hip_patterns_index.json
 
 # generally ignore hidden files and directories except for .gitignore
 .*
-!.gitignore
+!.gitignoreplans/

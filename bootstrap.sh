@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # bootstrap.sh — One-command setup for HoudiniMCP (Linux + macOS).
 #
-# Puts uv on the machine, installs the houdinimcp package from PyPI, then hands
+# Puts uv on the machine, installs the houdinimcp package from GitHub, then hands
 # over to the installer, which does the Houdini plugin and the MCP client
 # configuration.
 #
-# Fresh install:        curl -sSL https://raw.githubusercontent.com/rozhabrev/<REPO>/main/bootstrap.sh | bash
+# Fresh install:        curl -sSL https://raw.githubusercontent.com/rozhabrev/easyhoudini_mcp/main/bootstrap.sh | bash
 # From inside a clone:  bash bootstrap.sh          (uses the code in the clone)
 # No questions:         bash bootstrap.sh --yes
 # Every installer flag is passed through: bash bootstrap.sh --houdini-version 22.0 --harness codex
@@ -35,7 +35,7 @@ if [ -f "pyproject.toml" ] && [ -f "houdini_mcp_server.py" ]; then
     uv run python -m bridge.onboarding.install "$@"
 else
     step "Installing rozhabrev Houdini MCP from GitHub..."
-    uv tool install --force git+https://github.com/rozhabrev/<REPO>
+    uv tool install --force git+https://github.com/rozhabrev/easyhoudini_mcp
     ok "Installed"
     houdinimcp-install "$@"
 fi

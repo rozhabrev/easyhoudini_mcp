@@ -1,0 +1,10 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "io.github.rozhabrev/easyhoudini_mcp",
+  "description": "Houdini MCP: readable node graphs, studio USD practice, timelapse, asks before it goes on.",
+  "repository": {
+    "url": "https://github.com/rozhabrev/easyhoudini_mcp",
+    "source": "github"
+  },
+  "version": "0.3.0"
+}

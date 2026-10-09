@@ -2,11 +2,11 @@
 setlocal enabledelayedexpansion
 REM bootstrap.bat - One-command setup for HoudiniMCP (Windows).
 REM
-REM Puts uv on the machine, installs the houdinimcp package from PyPI, then
+REM Puts uv on the machine, installs the houdinimcp package from GitHub, then
 REM hands over to the installer, which does the Houdini plugin and the MCP
 REM client configuration.
 REM
-REM Fresh install:        powershell -c "irm https://raw.githubusercontent.com/rozhabrev/<REPO>/main/bootstrap.bat -OutFile bootstrap.bat; .\bootstrap.bat"
+REM Fresh install:        powershell -c "irm https://raw.githubusercontent.com/rozhabrev/easyhoudini_mcp/main/bootstrap.bat -OutFile bootstrap.bat; .\bootstrap.bat"
 REM From inside a clone:  bootstrap.bat          (uses the code in the clone)
 REM No questions:         bootstrap.bat --yes
 REM Every installer flag is passed through: bootstrap.bat --houdini-version 22.0 --harness codex
@@ -36,7 +36,7 @@ if defined IN_REPO (
 )
 
 echo [..]   Installing rozhabrev Houdini MCP from GitHub...
-uv tool install --force git+https://github.com/rozhabrev/<REPO> || exit /b 1
+uv tool install --force git+https://github.com/rozhabrev/easyhoudini_mcp || exit /b 1
 echo [OK]   Installed
 houdinimcp-install %*
 exit /b !errorlevel!

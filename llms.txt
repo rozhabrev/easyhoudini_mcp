@@ -1,0 +1,19 @@
+# easyhoudini MCP
+
+> An MCP server for SideFX Houdini. Connects Claude Code, Codex, Cursor, Gemini CLI, opencode and pi to a running Houdini. It builds readable node graphs, follows studio USD practice in Solaris, records a timelapse of every session and asks the user before it goes on.
+
+Install: tell your AI agent "Install the Houdini MCP from https://github.com/rozhabrev/easyhoudini_mcp following its README, and connect it to my Houdini."
+Or: `uv tool install git+https://github.com/rozhabrev/easyhoudini_mcp && houdinimcp-install`
+
+- About 20 tools with modes: scene_overview, node_inspect, geometry_inspect, stage_inspect, node_edit, parm_set, connect, cook, render, pdg, capture, execute, docs, rules, session and more.
+- House rules for agents: src/bridge/rules.md (core) and src/bridge/rules/ (modeling, USD, look, destruction, PDG, scripting).
+- Pictures of the viewport go back to the agent, even on another machine.
+- Timelapse of every session; parallel render variants through TOPs; offline Houdini help through houdinimd-docs.
+- Error log with hints for frequent agent mistakes.
+- Houdini 22, Windows, macOS, Linux. MIT License.
+- Tested first by the students of easyhoudini, a Houdini + AI course by Rodion Zhabrev: https://www.youtube.com/@rodionzhabrev
+
+## Links
+- README: https://github.com/rozhabrev/easyhoudini_mcp#readme
+- Rules: https://github.com/rozhabrev/easyhoudini_mcp/blob/main/src/bridge/rules.md
+- Changelog: https://github.com/rozhabrev/easyhoudini_mcp/blob/main/CHANGELOG.md
