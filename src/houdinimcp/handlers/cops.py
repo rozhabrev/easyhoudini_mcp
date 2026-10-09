@@ -3,21 +3,31 @@ import hou
 
 
 def get_cop_info(path):
-    """Get info about a COP node: resolution, planes, depth."""
+    """Get info about a COP node: resolution and planes for an old COP2 node,
+    the layer of each output for a Copernicus node."""
     node = hou.node(path)
     if not node:
         raise ValueError(f"Node not found: {path}")
-    cop = node
-    planes = []
-    for plane in cop.planes():
-        planes.append(plane)
-    return {
-        "path": node.path(),
-        "type": node.type().name(),
-        "xres": cop.xRes(),
-        "yres": cop.yRes(),
-        "planes": planes,
-    }
+    if hasattr(node, "planes"):
+        return {
+            "path": node.path(),
+            "type": node.type().name(),
+            "xres": node.xRes(),
+            "yres": node.yRes(),
+            "planes": list(node.planes()),
+        }
+    # Copernicus: no planes, one layer (or geometry, or a VDB) for each output.
+    outputs = []
+    for index, label in enumerate(node.outputLabels()):
+        entry = {"output": index, "label": label}
+        try:
+            layer = node.layer(index)
+            entry.update(resolution=list(layer.bufferResolution()),
+                         channels=layer.channelCount())
+        except Exception as error:
+            entry["layer"] = f"not an image layer ({type(error).__name__})"
+        outputs.append(entry)
+    return {"path": node.path(), "type": node.type().name(), "outputs": outputs}
 
 
 def get_cop_geometry(path):

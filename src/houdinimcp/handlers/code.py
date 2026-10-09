@@ -8,7 +8,7 @@ from contextlib import redirect_stdout, redirect_stderr
 
 import hou
 
-from .. import protocol, watchdog
+from .. import hints, protocol, watchdog
 from . import parameters
 
 LIMIT = 20_000
@@ -138,12 +138,12 @@ def execute_code(code, allow_dangerous=True, file=None, globals=None, args=None,
     stdout_capture = _Live(protocol.output_file(server.port) if server else None)
     stderr_capture = io.StringIO()
     name = file or "<execute>"
-    namespace = {"hou": hou, "__name__": "__main__", **(globals or {})}
+    namespace = {"hou": hou, "need": hints.need, "__name__": "__main__", **(globals or {})}
     if file:
         namespace["__file__"] = file
     argv = sys.argv
     sys.argv = [name] + [str(arg) for arg in args or ()]
-    failed = stopped = None
+    failed = stopped = hint = None
     watchdog.budget(timeout)
     writes = _Writes()
     try:
@@ -154,9 +154,11 @@ def execute_code(code, allow_dangerous=True, file=None, globals=None, args=None,
         failed = f"Stopped, because {stopped}. Here is where it was:\n{traceback.format_exc()}"
     except Exception as error:
         # The output that came before the error is often the whole answer, so
-        # it goes back with the error instead of being lost with it.
-        failed = f"{type(error).__name__}: {error}\n{traceback.format_exc()}"
-        traceback.print_exc(file=sys.stderr)
+        # it goes back with the error instead of being lost with it. The
+        # traceback goes to the caller only: printed, it filled the console of
+        # Houdini with one traceback for every failed script.
+        failed = f"{type(error).__name__}: {error}\n{_script_traceback(error)}"
+        hint = hints.hint(failed, code)
     finally:
         sys.argv = argv
         stdout_capture.close_file()
@@ -180,7 +182,18 @@ def execute_code(code, allow_dangerous=True, file=None, globals=None, args=None,
                              f"for long work.")
     if failed:
         report["error"] = failed
+    if hint:
+        report["hint"] = hint
     return report
+
+
+def _script_traceback(error):
+    """The traceback from the first line of the script on: the frame of this
+    module says nothing to the caller."""
+    frames = traceback.extract_tb(error.__traceback__)
+    ours = [index for index, frame in enumerate(frames) if frame.filename == __file__]
+    frames = frames[ours[-1] + 1:] if ours else frames
+    return "Traceback (most recent call last):\n" + "".join(traceback.format_list(frames))
 
 
 def _cut(name, text):

@@ -99,4 +99,9 @@ def build() -> MCPServer:
 
 
 def main():
+    import sys
+    if sys.argv[1:2] == ["errors"]:
+        from . import errors
+        errors.cli(sys.argv[2:])
+        return
     build().run(transport="stdio")

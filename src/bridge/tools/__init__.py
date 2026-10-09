@@ -7,6 +7,7 @@ A tool module holds:
 """
 import functools
 import importlib
+import json
 import inspect
 import pkgutil
 from typing import Optional
@@ -14,6 +15,8 @@ from typing import Optional
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp.server.mcpserver.tools import Tool
 from mcp.server.mcpserver.utilities.func_metadata import FuncMetadata
+
+from .. import errors
 
 # name -> Tool, filled by build(). batch validates its steps against these.
 TOOLS = {}
@@ -84,14 +87,66 @@ def _guarded(function, name: str = ""):
     @functools.wraps(function)
     def guarded(**arguments):
         given = {key: value for key, value in arguments.items() if value is not None}
+        errors.tick()
         try:
-            return _with_topics(_with_rules(function(**given)), name, given)
-        except ToolError:
-            raise
+            result = function(**given)
+        except ToolError as error:
+            raise ToolError(_noted(str(error), _logged(name, given, str(error)))) from error
         except Exception as error:
-            raise ToolError(f"{type(error).__name__}: {error}") from error
+            text = f"{type(error).__name__}: {error}"
+            raise ToolError(_noted(text, _logged(name, given, text))) from error
+        notes = [_logged(name, given, text) for text in errors.soft_errors(result)]
+        notes.append(_unsaved(name, given))
+        result = _with_note(result, " ".join(note for note in notes if note))
+        return _with_topics(_with_rules(result), name, given)
 
     return guarded
+
+
+# Tools that change the scene, and the scene_file modes that write it to
+# disk. The bridge counts the changes since the last save: an agent that never
+# saved lost a whole run to one crash (09.10.2026), though the rule said save.
+CHANGES = {"node_edit", "connect", "parm_set", "execute", "batch", "hda", "cook"}
+SAVE_EVERY = 10
+_unsaved_calls = {"count": 0}
+
+
+def _unsaved(name: str, arguments: dict) -> str:
+    mode = arguments.get("mode")
+    if name == "scene_file" and mode in ("save", "load"):
+        _unsaved_calls["count"] = 0
+        return ""
+    if name not in CHANGES or (name == "execute" and mode == "job"):
+        return ""
+    _unsaved_calls["count"] += 1
+    count = _unsaved_calls["count"]
+    if count < SAVE_EVERY or (count - SAVE_EVERY) % 5:
+        return ""
+    return (f"The scene has not been saved for {count} calls that change it. Save a new "
+            f"version now (scene_file mode='save' with a new path), or a crash loses "
+            f"all of it.")
+
+
+def _logged(name: str, arguments: dict, message: str) -> str:
+    """Write the error to the log. Returns the note for a repeated error."""
+    from ..connection import last_version
+    code = arguments.get("source")
+    if name == "batch":
+        code = json.dumps(arguments.get("operations"), default=str)
+    return errors.record(name, message, mode=arguments.get("mode") or arguments.get("action"),
+                         code=code, version=last_version())
+
+
+def _noted(text: str, note: str) -> str:
+    return f"{text}\n\n{note}" if note else text
+
+
+def _with_note(result, note: str):
+    if not note:
+        return result
+    if isinstance(result, list):
+        return result + [note]
+    return f"{result}\n\n{note}"
 
 
 def _with_topics(result, name: str, arguments: dict):

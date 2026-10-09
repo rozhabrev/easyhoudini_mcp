@@ -4,6 +4,7 @@ Every mode takes one item or a list of items. Houdini adds a numeric suffix
 when a name is already used, so each result carries the path that Houdini gave.
 """
 from . import items_of, unknown_mode
+from .. import hints
 from ..handlers import chops, cops, lop, materials, nodes, takes, vex, viewport
 
 MUTATES = True
@@ -23,7 +24,14 @@ def run(items=None, mode="create", **defaults):
         try:
             results.append(_one(mode, arguments))
         except Exception as error:
-            results.append({"error": f"{type(error).__name__}: {error}", "item": arguments})
+            text = f"{type(error).__name__}: {error}"
+            made = f"hou.node('{arguments.get('parent_path', '')}').createNode(" \
+                   f"'{arguments.get('node_type', '')}')" if mode == "create" else ""
+            failed = {"error": text, "item": arguments}
+            hint = hints.hint(text, made)
+            if hint:
+                failed["hint"] = hint
+            results.append(failed)
     return results[0] if len(results) == 1 else {"count": len(results), "results": results}
 
 

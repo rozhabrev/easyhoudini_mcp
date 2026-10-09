@@ -7,13 +7,19 @@ MUTATES = False
 
 MODES = ("info", "parms", "schema", "changed", "names", "expression", "keyframes", "code",
          "cook_chain", "explain", "material", "image", "channels", "simulation",
-         "render_settings", "cache", "time_dependency", "validate", "readers", "layout")
+         "render_settings", "cache", "time_dependency", "validate", "readers", "layout",
+         "errors")
+
+# Names that agents use for a mode, from the error log of real runs.
+SYNONYMS = {"help": "explain", "error": "errors", "warnings": "errors", "parameters": "parms",
+            "vex": "code", "snippet": "code"}
 
 
 def run(paths, mode="info", parm=None, include_all_parms=False, object_name=None,
         field_name=None, channel=None, start=None, end=None, pattern=None,
         has_expression=False, frames=None, fields=None):
     """Inspect one node or a list of nodes. Every result names its path."""
+    mode = SYNONYMS.get(mode, mode)
     if fields and mode not in ("parms", "changed"):
         raise ValueError(f"fields is read by mode 'parms' and mode 'changed', not by "
                          f"mode '{mode}'.")
@@ -43,6 +49,8 @@ def _one(path, mode, parm, include_all_parms, object_name, field_name, channel, 
             start, end, pattern, has_expression, fields=fields))
     if mode == "info":
         return nodes.get_node_info(path, include_all_parms)
+    if mode == "errors":
+        return nodes.node_messages(path)
     if mode == "parms":
         return parameters.get_parameters(path, parm, pattern, has_expression,
                                          fields=fields)

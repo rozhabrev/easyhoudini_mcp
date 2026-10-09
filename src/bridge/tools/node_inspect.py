@@ -24,6 +24,8 @@ def tool(paths: Union[str, List[str]], mode: str = "info", parm: str = None,
 
     mode:
         "info"            — type, inputs, outputs, flags, changed parameters.
+        "errors"          — the errors, warnings and messages on the node, and
+                            whether it needs to cook.
         "parms"           — every parameter, or one parameter when you give
                             `parm`. The result says whether the value comes
                             from an expression.

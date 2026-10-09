@@ -50,7 +50,10 @@ def look_through(viewer, port, camera_path):
         port.setCamera(cam)
         return
     if viewer.pwd().childTypeCategory() != hou.lopNodeTypeCategory():
-        raise ValueError(f"Camera not found: {camera_path}")
+        raise ValueError(f"Camera not found: {camera_path}. There is no camera node at "
+                         f"that path, and a USD camera prim path works only while the "
+                         f"viewer shows a LOP network: give the path of a camera node, "
+                         f"or show the LOP network first (select show=True).")
 
     # A viewer that has just moved to the network loads the stage in the event
     # loop, and until then it knows no camera prim.
@@ -97,6 +100,10 @@ def set_viewport_renderer(renderer):
         raise RuntimeError("No scene viewer found")
     available = viewer.hydraRenderers()
     match = next((name for name in available if name.lower() == renderer.lower()), None)
+    if match is None:
+        # "karma" means the Karma that the list has first, "vk" Houdini VK.
+        match = next((name for name in available
+                      if renderer.lower() in name.lower().split()), None)
     if match is None:
         raise ValueError(f"Unknown viewport renderer: {renderer}. Use one of: {list(available)}")
     viewer.setHydraRenderer(match)
@@ -332,6 +339,10 @@ def fit(port, what, fill=0.9):
     if what == "all":
         port.frameAll()
         return "all"
+    if isinstance(what, (int, float)) or str(what).replace(".", "", 1).isdigit():
+        raise ValueError(f"frame is what the view frames ('selection', 'all', or the path "
+                         f"of a node), not a frame number. Set the frame {what} with "
+                         f"playbar, then capture.")
     node = hou.node(what)
     if not node:
         raise ValueError(f"frame: no node at {what}. Use 'selection', 'all', "

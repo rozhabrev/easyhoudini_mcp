@@ -18,8 +18,10 @@ def tool(mode: str = "scene", path: str = None, pattern: str = None,
         "children"     — the children of `path`. recursive=True walks down.
         "search"       — nodes whose name matches `pattern`, under `path`.
                          node_type filters by type name.
-        "node_types"   — the node types this Houdini has, for one `category`
-                         such as "Sop", "Object", "Lop", "Driver".
+        "node_types"   — the node types this Houdini has: `pattern` is a
+                         wildcard on the name ("*bend*") or a word of the
+                         label, `category` is "Sop", "Object", "Lop",
+                         "Driver". Without both, only the categories.
         "errors"       — every node under `path` that has a cook error.
         "materials"    — the materials in `path` (default /mat) and the types.
         "lights"       — the lights on the USD stage of the LOP node `path`.

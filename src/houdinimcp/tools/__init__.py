@@ -74,4 +74,8 @@ def items_of(mode, items, defaults):
 
 
 def unknown_mode(mode, known):
-    return ValueError(f"Unknown mode '{mode}'. Use one of: {', '.join(known)}.")
+    import difflib
+    close = difflib.get_close_matches(str(mode), list(known), n=1, cutoff=0.5)
+    return ValueError(f"Unknown mode '{mode}'."
+                      + (f" Did you mean '{close[0]}'?" if close else "")
+                      + f" Use one of: {', '.join(known)}.")

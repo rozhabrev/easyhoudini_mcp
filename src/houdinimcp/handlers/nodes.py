@@ -123,6 +123,17 @@ def _menu_label(template, val):
     return None
 
 
+def node_messages(path):
+    """The errors, warnings and messages of one node, as Houdini shows them on
+    the node, and whether it needs to cook."""
+    node = hou.node(path)
+    if node is None:
+        raise ValueError(f"Node not found: {path}")
+    return {"errors": list(node.errors()), "warnings": list(node.warnings()),
+            "messages": list(node.messages()),
+            "needs_to_cook": getattr(node, "needsToCook", lambda: None)()}
+
+
 def get_node_info(path, include_all_parms=False):
     """Returns detailed information about a node.
 
@@ -575,21 +586,44 @@ def find_nodes(pattern, node_type=None, root_path="/"):
     return {"pattern": pattern, "count": len(nodes), "nodes": nodes}
 
 
-def list_node_types(category=None):
-    """List available node types, optionally filtered by category."""
-    result = []
-    for cat_name, cat in hou.nodeTypeCategories().items():
-        if category and cat_name != category:
-            continue
+NODE_TYPES_LIMIT = 300
+
+
+def list_node_types(category=None, pattern=None):
+    """The node types of this Houdini. `pattern` is a wildcard on the type
+    name ("*bend*") or a word of its label; `category` is "Sop", "Lop" and so
+    on, in any case. Without either, only the categories and their counts:
+    the whole list is some 200 000 characters, and a client drops it."""
+    import fnmatch
+    categories = hou.nodeTypeCategories()
+    if category:
+        chosen = {name: cat for name, cat in categories.items()
+                  if name.lower() == category.lower()}
+        if not chosen:
+            raise ValueError(f"No node type category '{category}'. Use one of: "
+                             f"{', '.join(sorted(categories))}.")
+        categories = chosen
+    if not category and not pattern:
+        return {"categories": {name: len(cat.nodeTypes()) for name, cat in categories.items()},
+                "note": "Give a pattern (\"*bend*\", or a word of the label) or a "
+                        "category to list the types."}
+    wildcard = pattern if pattern and any(ch in pattern for ch in "*?[") else None
+    word = pattern.lower() if pattern and not wildcard else None
+    result, total = [], 0
+    for cat_name, cat in categories.items():
         for name, nt in cat.nodeTypes().items():
-            result.append({
-                "name": name,
-                "category": cat_name,
-                "label": nt.description(),
-            })
-        if len(result) >= 500:
-            break
-    return {"count": len(result), "types": result}
+            label = nt.description()
+            if wildcard and not fnmatch.fnmatch(name.lower(), wildcard.lower()):
+                continue
+            if word and word not in name.lower() and word not in label.lower():
+                continue
+            total += 1
+            if len(result) < NODE_TYPES_LIMIT:
+                result.append({"name": name, "category": cat_name, "label": label})
+    report = {"count": total, "types": result}
+    if total > len(result):
+        report["note"] = f"The first {len(result)} of {total}: give a narrower pattern."
+    return report
 
 
 def connect_nodes_batch(connections):
