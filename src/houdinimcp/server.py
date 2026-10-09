@@ -215,7 +215,15 @@ class HoudiniMCPServer:
         with self._lock:
             if client not in self._buffers:
                 return
-            commands, self._buffers[client] = protocol.decode(self._buffers[client] + data)
+            try:
+                commands, self._buffers[client] = protocol.decode(
+                    self._buffers[client] + data)
+            except ValueError:
+                commands = None   # not our protocol: the stream cannot recover
+        if commands is None:
+            log_error("reader")
+            self._drop(client)
+            return
         for command in commands:
             if command.get("type") == "interrupt":
                 self._send(client, "interrupt", self._interrupt())
