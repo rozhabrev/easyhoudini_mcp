@@ -150,8 +150,10 @@ def _codex_configure(repo_dir: str, dry_run: bool) -> str:
     command = server_command(repo_dir)
     block = (
         f"[mcp_servers.{SERVER_NAME}]\n"
-        f'command = "{command["command"]}"\n'
-        f"args = {json.dumps(command['args'])}\n"
+        # JSON string syntax is valid TOML basic-string syntax: backslashes in Windows paths come out escaped
+        # (a bare "C:\Users\..." is an invalid escape and Codex / ChatGPT desktop refuse to start)
+        f"command = {json.dumps(command['command'], ensure_ascii=False)}\n"
+        f"args = {json.dumps(command['args'], ensure_ascii=False)}\n"
     )
     if not dry_run:
         os.makedirs(os.path.dirname(path), exist_ok=True)

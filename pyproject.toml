@@ -1,6 +1,6 @@
 [project]
 name = "easyhoudini-mcp"
-version = "0.3.0"
+version = "0.3.1"
 description = "A Houdini MCP that builds readable node graphs, follows studio USD practice, records a timelapse and asks before it goes on. For Claude, Codex, Cursor and other AI agents."
 readme = "README.md"
 requires-python = ">=3.10"

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.1 - 2026-10-10
+
+### Fixed
+- Codex / ChatGPT desktop: the installer wrote the server command into
+  `~/.codex/config.toml` as `command = "C:\Users\..."`, and TOML reads the
+  backslashes of a Windows path as escapes - the app refused to start on that
+  line. The command and the args are now written escaped. If your config is
+  already broken: run the installer again, or open `config.toml` and replace
+  the double quotes on that line with single quotes.
+
 ## 0.3.0 - 2026-10-09
 
 From a live session: a low poly shell around a shoe, given as one node inside
