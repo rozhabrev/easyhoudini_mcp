@@ -51,12 +51,27 @@ def _walk(value, found, depth=0):
             _walk(item, found, depth + 1)
 
 
+# The session id of every node that the agent made in this session. The
+# display flag moves only away from such a node: the display node of the user
+# decides what a network outputs (what a SOP Create gives the stage), and a
+# flag moved off it changed the scene and started a heavy cook (09.10.2026).
+MADE = set()
+
+
 def touched(command, params, result=None, before=None):
     """The node that a call worked on last, or None."""
     found = []
+    if command == "select" and params.get("paths"):
+        # The node to show is the one asked for. The result also names its
+        # network, and following that showed the network one level up.
+        paths = params["paths"] if isinstance(params["paths"], list) else [params["paths"]]
+        node = _as_node(paths[0])
+        if node is not None:
+            return node
     if before is not None:
         new = [node for node in hou.node("/").allSubChildren(recurse_in_locked_nodes=False)
                if node.sessionId() not in before]
+        MADE.update(node.sessionId() for node in new)
         # The last new node that is not inside a new node: the top of what
         # the call made, not the inside of an asset it made.
         tops = [node for node in new if node.parent() is None
@@ -99,7 +114,9 @@ def advance_display(node):
     """Put the display flag on `node` when it is the new end of the chain that
     the viewer draws: it has no outputs, and the node that holds the flag now
     feeds it. A side branch or a node in another chain keeps the flag where
-    it is. Returns the node that got the flag, or None."""
+    it is, and so does a flag on a node that the agent did not make: the
+    flag moves only inside the network of the work. Returns the node that got
+    the flag, or None."""
     if not isinstance(node, (hou.SopNode, hou.LopNode)) or heavy(node):
         return None
     if node.outputs() or node.isDisplayFlagSet():
@@ -108,6 +125,8 @@ def advance_display(node):
     with contextlib.suppress(AttributeError, hou.Error):
         current = node.parent().displayNode()
     if current is not None and current not in node.inputAncestors():
+        return None
+    if current is not None and current.sessionId() not in MADE:
         return None
     with contextlib.suppress(hou.Error):
         node.setDisplayFlag(True)

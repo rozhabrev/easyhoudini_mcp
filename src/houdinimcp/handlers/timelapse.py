@@ -405,8 +405,10 @@ def copy_render(path, frame_range, started):
 
 def before(command):
     """Called before each call of a tool with MUTATES. An execute names no
-    node in its params, so the nodes before it tell what it made."""
-    if command == "execute" and is_enabled():
+    node in its params, so the nodes before it tell what it made. The nodes
+    that a call makes are the agent's, and only those give up the display
+    flag (follow.MADE)."""
+    if command in ("execute", "node_edit") and is_enabled():
         return follow.nodes_now()
     return None
 
