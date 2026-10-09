@@ -28,8 +28,14 @@ Shapes
   base with a transition, a shaft that tapers to the top, a capital, smooth
   joins. A stack of cylinders reads as "a bar with lumps on it" and is a
   failure.
-- Never build geometry in VEX. A building is boxes and cylinders: polyextrude,
-  boolean for openings, clip.
+- In the procedural mode (the default), never build geometry in VEX. A
+  building is boxes and cylinders: polyextrude, boolean for openings, clip.
+  By hand (the core, How procedural), one wrangle with addpoint and addprim
+  at worked-out coordinates is the right tool.
+- Every while loop in VEX gets a hard limit on its steps
+  (`int guard = 0; while (more && guard++ < 10000)`). A walk along a contour
+  that runs past its last point never ends, and Houdini hangs until it is
+  killed.
 - Fuse after each merge and boolean. Boolean fails on touching or coplanar
   parts: join those through VDB.
 - A global change of the whole object (a tilt, a bend) is the last transform,

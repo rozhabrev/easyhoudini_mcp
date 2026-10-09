@@ -66,7 +66,8 @@ Rules of the house
   a layout of a whole network moves work the user placed by hand. Read
   node_inspect mode "layout" on the network after you add nodes.
 - The VEX you write stays in the scene, and the user reads it and tunes it by
-  hand. Write it for that reader.
+  hand. Write it for that reader. (A shape drawn "by hand" at the user's word
+  is the exception: see How procedural in the rules.)
   - Name things with plain words in camelCase: `outwardSpeed`, `distanceToShell`.
     Never one letter, and never a niche term where two plain words say it.
   - Keep the values between steps as attributes (`f@distanceToSkin`,
@@ -78,7 +79,8 @@ Rules of the house
     (`exportlist`) is read-only, and the snippet fails at the first cook with
     "Read-only expression on left side of assignment". When your snippet writes
     a temporary field, put its name in `exportlist`, or set `exportlist` to `*`.
-- Do not save the user's .hip file unless you are asked to.
+- Never save over the user's .hip file. Save new versions next to it, as the
+  rules below say.
 """
 
 
