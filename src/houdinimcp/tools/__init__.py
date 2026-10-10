@@ -4,6 +4,7 @@ A tool module holds:
     MUTATES        True when the tool can change the scene. The dispatch puts a
                    mutating call in one undo group, so no hand-kept list of
                    command names can drift from the code.
+    mutates(params) optional: decides it for one call instead of MUTATES.
     run(**params)  the work. Plain JSON in, plain JSON out.
 """
 import importlib
@@ -26,7 +27,11 @@ def dispatch(command: str, params: dict):
                          f"The bridge and the plugin are different versions: run the "
                          f"installer again and restart Houdini.")
     module = importlib.import_module(f"{__name__}.{command}")
-    if not getattr(module, "MUTATES", False):
+    # A tool whose calls differ (custom: a list reads, a run may change the
+    # scene) decides for each call.
+    decide = getattr(module, "mutates", None)
+    mutating = decide(params) if decide else getattr(module, "MUTATES", False)
+    if not mutating:
         return module.run(**params)
     started = time.time()
     autosave.before(command, params)

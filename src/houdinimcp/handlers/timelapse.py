@@ -408,7 +408,7 @@ def before(command):
     node in its params, so the nodes before it tell what it made. The nodes
     that a call makes are the agent's, and only those give up the display
     flag (follow.MADE)."""
-    if command in ("execute", "node_edit") and is_enabled():
+    if command in ("execute", "node_edit", "custom") and is_enabled():
         return follow.nodes_now()
     return None
 

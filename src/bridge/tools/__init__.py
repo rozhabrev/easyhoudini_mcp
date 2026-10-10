@@ -106,7 +106,7 @@ def _guarded(function, name: str = ""):
 # Tools that change the scene, and the scene_file modes that write it to
 # disk. The bridge counts the changes since the last save: an agent that never
 # saved lost a whole run to one crash (09.10.2026), though the rule said save.
-CHANGES = {"node_edit", "connect", "parm_set", "execute", "batch", "hda", "cook"}
+CHANGES = {"node_edit", "connect", "parm_set", "execute", "batch", "hda", "cook", "custom"}
 SAVE_EVERY = 10
 _unsaved_calls = {"count": 0}
 
@@ -116,7 +116,8 @@ def _unsaved(name: str, arguments: dict) -> str:
     if name == "scene_file" and mode in ("save", "load"):
         _unsaved_calls["count"] = 0
         return ""
-    if name not in CHANGES or (name == "execute" and mode == "job"):
+    if name not in CHANGES or (name == "execute" and mode == "job") \
+            or (name == "custom" and mode != "run"):
         return ""
     _unsaved_calls["count"] += 1
     count = _unsaved_calls["count"]
@@ -171,7 +172,26 @@ def _with_rules(result):
     if RULES["sent"] or not RULES["text"]:
         return result
     RULES["sent"] = True
-    rules = "Read these rules before your next call.\n\n" + RULES["text"]
+    rules = "Read these rules before your next call.\n\n" + RULES["text"] + _custom_tools()
     if isinstance(result, list):
         return result + [rules]
     return f"{result}\n\n{rules}"
+
+
+def _custom_tools() -> str:
+    """The tools that the person wrote, one line each, for the first result:
+    an agent that must ask for the list first never learns that they exist."""
+    from ..connection import call
+    try:
+        found = call("custom", {"mode": "list"}, timeout=10.0)
+    except Exception:
+        return ""
+    lines = [f"- {tool['name']}: {(tool['description'] or 'no description').splitlines()[0]}"
+             for tool in found.get("tools", [])]
+    lines += [f"- file that failed to load: {problem['file']}: {problem['error']}"
+              for problem in found.get("problems", [])]
+    if not lines:
+        return ""
+    return ("\n\nTools of this person (run with `custom` mode='run'; `custom` "
+            "mode='list' gives their arguments). When the request matches one, use it "
+            "instead of building that step by hand:\n" + "\n".join(lines))

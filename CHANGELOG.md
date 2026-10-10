@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 - 2026-10-10
+
+### Added
+- Your own tools: a function in a Python file in
+  `$HOUDINI_USER_PREF_DIR/easyhoudini_mcp/tools/` (or a folder in
+  `HOUDINIMCP_TOOLS`), marked with `@tool`, becomes a tool that the agent can
+  run through the new `custom` tool. The agent gets the list with its first
+  result, and the core rules tell it to use such a tool instead of building
+  the same step by hand. A run is one undo group; a changed file is read again
+  without a restart. The idea comes from the toolsets of Unreal MCP.
+
 ## 0.3.1 - 2026-10-10
 
 ### Fixed

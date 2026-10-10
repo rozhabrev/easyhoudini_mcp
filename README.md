@@ -122,8 +122,44 @@ headless start. Read [AGENTS.md](AGENTS.md) before you change code.
 | **Docs** | `docs`: the Houdini documentation of your build, offline |
 | **Rules** | `rules`: the house rules by topic |
 | **Session** | `session`: status, start, attach, interrupt |
+| **Yours** | `custom`: the tools that you write, see below |
 
 > **Warning:** `execute` runs any Python in Houdini. Save your work. (We learned this one too.)
+
+## Your own tools
+
+Put your way of doing a step in a Python file, and the agent uses it instead of
+building the step again by hand. The folder is
+`$HOUDINI_USER_PREF_DIR/easyhoudini_mcp/tools/`, or any folder in the
+environment variable `HOUDINIMCP_TOOLS`. One decorator makes a function a tool:
+
+```python
+import hou
+from houdinimcp.custom import tool
+
+
+@tool
+def balls_on_grid(parent: str = "/obj", count: int = 50, radius: float = 0.05) -> dict:
+    """Spheres scattered on a grid. Use it when the request is balls on a grid."""
+    geo = hou.node(parent).createNode("geo", "balls_on_grid")
+    scatter = geo.createNode("scatter")
+    scatter.setFirstInput(geo.createNode("grid"))
+    scatter.parm("npts").set(count)
+    sphere = geo.createNode("sphere")
+    sphere.parm("scale").set(radius)
+    copy = geo.createNode("copytopoints")
+    copy.setInput(0, sphere)
+    copy.setInput(1, scatter)
+    copy.setDisplayFlag(True)
+    geo.layoutChildren()
+    return {"node": copy.path()}
+```
+
+The agent reads the docstring and the arguments, the same way it reads any
+other tool, so write in the docstring when to use it. The list of your tools
+comes with the first result of a session. A run is one undo group;
+`@tool(mutates=False)` marks a tool that only reads. A changed file is read
+again on the next call, no restart.
 
 ## Credits and license
 

@@ -8,6 +8,7 @@ Or: `uv tool install git+https://github.com/rozhabrev/easyhoudini_mcp && houdini
 - About 20 tools with modes: scene_overview, node_inspect, geometry_inspect, stage_inspect, node_edit, parm_set, connect, cook, render, pdg, capture, execute, docs, rules, session and more.
 - House rules for agents: src/bridge/rules.md (core) and src/bridge/rules/ (modeling, USD, look, destruction, PDG, scripting).
 - Pictures of the viewport go back to the agent, even on another machine.
+- Your own tools: a Python function marked @tool in a tools folder becomes a tool for the agent (custom).
 - Timelapse of every session; parallel render variants through TOPs; offline Houdini help through houdinimd-docs.
 - Error log with hints for frequent agent mistakes.
 - Houdini 22, Windows, macOS, Linux. MIT License.

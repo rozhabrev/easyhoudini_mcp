@@ -143,6 +143,10 @@ Before you start
 - The timelapse records your work (capture mode "timelapse"). Send renders
   through `render`, so the timelapse keeps a copy. Renders go to files, not
   to MPlay.
+- The person can have tools of their own (the `custom` tool). They are
+  their way of doing a step: when the request matches what one does, run it
+  instead of building the same step by hand, and keep what it made. The list
+  came with your first result; `custom` mode "list" gives it again.
 - On a scene you did not make, check its health first: bypassed nodes,
   unconnected inputs, branches that lead nowhere, nodes with zero points.
 

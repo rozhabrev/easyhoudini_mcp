@@ -34,6 +34,7 @@ The tools
   stage_inspect    the USD stage that a LOP node makes
   pdg              TOP networks and their work items
   batch            several calls in one round trip and one undo group
+  custom           the tools that the person wrote; use one when it fits
   execute          run code in the session. Last resort.
 
 Houdini fails without an error more often than it fails with one. These facts
