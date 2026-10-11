@@ -4,7 +4,7 @@ from pathlib import Path
 
 from mcp.server.mcpserver import MCPServer
 
-from . import connection, tools
+from . import connection, tools, update
 
 INSTRUCTIONS = """\nThese tools are few on purpose. Each one takes a `mode` and a set of arguments,
 and bends to the task instead of being replaced by a script. Read the
@@ -92,6 +92,7 @@ RULES = Path(__file__).with_name("rules.md").read_text(encoding="utf-8")
 
 @asynccontextmanager
 async def lifespan(server):
+    update.start()
     yield {}
     connection.shutdown()
 

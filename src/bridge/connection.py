@@ -630,6 +630,12 @@ def shutdown():
     stop_headless()
 
 
+def last_session() -> dict:
+    """What the Houdini that answered last said about itself: version, pid,
+    port, file, and the version of its plugin copy."""
+    return dict(_last_session or {})
+
+
 def last_version() -> str:
     """The Houdini build that answered last, for example "21.0.829".
 

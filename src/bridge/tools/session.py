@@ -1,8 +1,9 @@
 """session — which Houdini answers, and start, choose, stop or interrupt one."""
 import json
 
+from .. import update
 from ..connection import (HoudiniError, attach, call, detach, installs, interrupt,
-                          live_sessions, start_gui, start_headless, start_hint, status,
+                          last_session, live_sessions, start_gui, start_headless, start_hint, status,
                           stop_headless)
 
 
@@ -24,8 +25,9 @@ def tool(action: str = "status", hip: str = None, port: int = None,
 
     action:
         "status"    — the session that the bridge talks to now, the other
-                      sessions, and the port. Starts nothing, and always
-                      answers.
+                      sessions, the port, and the versions of the bridge, the
+                      plugin and the latest release. Starts nothing, and
+                      always answers.
         "list"      — every Houdini that runs, with its version, its process
                       id, its .hip file, whether it has a window and whether it
                       answers; and the Houdini versions installed.
@@ -86,6 +88,7 @@ def tool(action: str = "status", hip: str = None, port: int = None,
     report = status()
     if done is not None:
         report["action"] = done
+    report["mcp_version"] = update.report(last_session())
     if houdini is not None:
         report["houdini"] = houdini
     elif "problem" not in report:

@@ -9,12 +9,8 @@ import traceback
 
 import hou
 
-from . import hints, protocol, watchdog
+from . import __version__, hints, protocol, watchdog
 from .tools import dispatch
-
-EXTENSION_NAME = "Houdini MCP"
-EXTENSION_VERSION = (0, 3)
-EXTENSION_DESCRIPTION = "Connect Houdini to Claude via MCP"
 
 WAITING = object()   # a call that waits for the event loop; see _step
 
@@ -28,7 +24,21 @@ def identity() -> dict:
         "product": hou.applicationName(),
         "ui": hou.isUIAvailable(),
         "hip": hou.hipFile.path(),
+        **plugin(),
     }
+
+
+def plugin() -> dict:
+    """The version of this plugin copy, and the prefs directory that it was
+    installed into. The bridge compares the version with its own, and the
+    directory goes into the install command that brings this copy up to date."""
+    found = {"plugin": __version__}
+    # <prefs>/houdinimcp/pythonX.Ylibs/houdinimcp/__init__.py, as the installer writes it.
+    module_dir = os.path.dirname(os.path.abspath(__file__))
+    prefs_dir = os.path.dirname(os.path.dirname(os.path.dirname(module_dir)))
+    if os.path.isfile(os.path.join(prefs_dir, "packages", "houdinimcp.json")):
+        found["plugin_prefs"] = prefs_dir
+    return found
 
 
 LOG_BYTES = 2 * 1024 * 1024
@@ -56,7 +66,7 @@ def log_error(name):
 def identity_quiet() -> dict:
     """identity() from a thread that is not the main one: hou can be busy
     there, so only what needs no call into Houdini."""
-    return {"pid": os.getpid()}
+    return {"pid": os.getpid(), **plugin()}
 
 
 class HoudiniMCPServer:

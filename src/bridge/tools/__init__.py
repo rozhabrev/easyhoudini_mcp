@@ -16,7 +16,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from mcp.server.mcpserver.tools import Tool
 from mcp.server.mcpserver.utilities.func_metadata import FuncMetadata
 
-from .. import errors, structure
+from .. import errors, structure, update
 
 # name -> Tool, filled by build(). batch validates its steps against these.
 TOOLS = {}
@@ -98,6 +98,7 @@ def _guarded(function, name: str = ""):
         notes = [_logged(name, given, text) for text in errors.soft_errors(result)]
         notes.append(_unsaved(name, given))
         notes.append(structure.note(name, given))
+        notes.append(_update_note())
         result = _with_note(result, " ".join(note for note in notes if note))
         return _with_topics(_with_rules(result), name, given)
 
@@ -127,6 +128,11 @@ def _unsaved(name: str, arguments: dict) -> str:
     return (f"The scene has not been saved for {count} calls that change it. Save a new "
             f"version now (scene_file mode='save' with a new path), or a crash loses "
             f"all of it.")
+
+
+def _update_note() -> str:
+    from ..connection import last_session
+    return update.note(last_session())
 
 
 def _logged(name: str, arguments: dict, message: str) -> str:

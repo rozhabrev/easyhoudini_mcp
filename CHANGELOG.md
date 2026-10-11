@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.4.2 - 2026-10-11
+
+Users of 0.3 kept the subnet bug after 0.4.1 was out: nothing told them that a
+fix existed. **Versions up to 0.4.1 cannot tell you, so update to 0.4.2 once
+by hand** (README, How to update). After that the agent tells you.
+
+### Added
+- The bridge looks for a new release at start, in the background: the release
+  tags on GitHub, once a day at most, with a 3 second timeout. Offline it says
+  nothing. When a release is newer, the next tool result tells the agent the
+  version, the changes and the one command that updates the bridge and the
+  plugin; the agent asks the user and updates only after a yes. On Windows the
+  agent gives the user the command instead, to run with the AI client closed:
+  the running bridge holds its own files (os error 32). The note comes once a
+  day. `HOUDINIMCP_NO_UPDATE_CHECK=1` turns the check off.
+- The plugin reports its version and its prefs directory in every answer. When
+  the plugin copy in Houdini does not match the bridge, the agent gets the
+  installer command for that Houdini once per session.
+- `session` action "status" shows the versions of the bridge, the plugin and
+  the latest release.
+
+### Changed
+- The version lives in one place, `houdinimcp/__init__.py`; `pyproject.toml`
+  reads it from there.
+
 ## 0.4.1 - 2026-10-11
 
 From users of 0.3: after a few follow-up requests the network filled with

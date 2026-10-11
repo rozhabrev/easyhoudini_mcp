@@ -21,6 +21,14 @@ Install the Houdini MCP from https://github.com/rozhabrev/easyhoudini_mcp follow
 
 That's it. The agent runs the installer, which adds the plugin to Houdini and the server to your AI clients. Restart both. Manual install is [below](#manual-install).
 
+## How to update
+
+From 0.4.2 on, the MCP tells your agent when a new release is out, once a day at most. The agent tells you what changed and asks; nothing is downloaded until you say yes. It also tells you when the plugin in Houdini is an older copy than the server.
+
+**Have 0.4.1 or older? Update once by hand**, because those versions cannot tell you: close your AI client and run the install line again ([Manual install](#manual-install)), or ask your agent to "update the Houdini MCP from https://github.com/rozhabrev/easyhoudini_mcp". Then restart Houdini and the AI client.
+
+On Windows, the running server holds its own files, so the update runs with the AI client closed. The agent gives you the one line to paste into PowerShell. Set `HOUDINIMCP_NO_UPDATE_CHECK=1` to turn the check off.
+
 ## Why another Houdini MCP
 
 We tried the big ones (188 tools) and the small ones. Agents ended up writing raw Python in most of their calls anyway, so a large tool list costs time and gives little. This MCP keeps a **small set of tools with modes** (one call, many items, one round trip) and puts the value where it matters: **house rules** that an agent reads before it touches your scene.

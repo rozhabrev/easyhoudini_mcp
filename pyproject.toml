@@ -1,6 +1,6 @@
 [project]
 name = "easyhoudini-mcp"
-version = "0.4.1"
+dynamic = ["version"]
 description = "A Houdini MCP that builds readable node graphs, follows studio USD practice, records a timelapse and asks before it goes on. For Claude, Codex, Cursor and other AI agents."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -22,7 +22,8 @@ dependencies = [
 ]
 
 # The repository URL lives here. Everything that needs it reads it from here,
-# except the bootstrap scripts, which run before the repository exists.
+# except the bootstrap scripts, which run before the repository exists, and
+# bridge/update.py, which runs from a wheel that has no pyproject.toml.
 [project.urls]
 Repository = "https://github.com/rozhabrev/easyhoudini_mcp"
 Issues = "https://github.com/rozhabrev/easyhoudini_mcp/issues"
@@ -30,6 +31,9 @@ Issues = "https://github.com/rozhabrev/easyhoudini_mcp/issues"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/houdinimcp/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/houdinimcp", "src/bridge"]
