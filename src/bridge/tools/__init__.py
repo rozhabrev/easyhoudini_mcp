@@ -16,7 +16,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from mcp.server.mcpserver.tools import Tool
 from mcp.server.mcpserver.utilities.func_metadata import FuncMetadata
 
-from .. import errors
+from .. import errors, structure
 
 # name -> Tool, filled by build(). batch validates its steps against these.
 TOOLS = {}
@@ -97,6 +97,7 @@ def _guarded(function, name: str = ""):
             raise ToolError(_noted(text, _logged(name, given, text))) from error
         notes = [_logged(name, given, text) for text in errors.soft_errors(result)]
         notes.append(_unsaved(name, given))
+        notes.append(structure.note(name, given))
         result = _with_note(result, " ".join(note for note in notes if note))
         return _with_topics(_with_rules(result), name, given)
 

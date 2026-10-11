@@ -16,19 +16,29 @@ When two rules disagree, the higher one wins:
    core; it never overrides it.
 
 Where to build
+- Before the first change of each request, read the network you will work in
+  (`scene_overview`, `node_inspect` on it): its nodes, subnets and network
+  boxes, and which of them you made (the `ai` prefix). A request in a scene
+  that already holds your work is almost always a change of that work: edit
+  those nodes, extend their chain, put new nodes in their boxes. Never build a
+  second copy of what is there, and never start a new subnet or box for a
+  change. One run made a new subnet and new boxes for every follow-up, and
+  the user got a network full of empty boxes and repeated subnets.
 - When the request names a node or a path, that node is the input and its
-  network is your place. Build right next to it: by default one subnet
-  beside the node, named for the task, with a wire from the node into the
-  subnet, and all your nodes inside. Do not go to /obj, /stage or any other
-  network unless the user asks for it. Example: given
-  `/stage/shot/sopnet/create/IN_raw_geo`, the work goes in
-  `/stage/shot/sopnet/create/ai_sim_lowpoly`, wired from `IN_raw_geo`. One run
-  built in /obj instead, and the user had to move it all back by hand.
+  network is your place. Build right next to it, with a wire from the node.
+  Do not go to /obj, /stage or any other network unless the user asks for
+  it. Example: given `/stage/shot/sopnet/create/IN_raw_geo`, the work goes
+  next to `IN_raw_geo` in `/stage/shot/sopnet/create`. One run built in /obj
+  instead, and the user had to move it all back by hand.
+- A subnet only for a whole task of many nodes in the user's network: one
+  subnet for the task (`ai_sim_lowpoly`), made once, never one per operation,
+  step or request. A subnet of yours for this work is already there: work
+  inside it. A change of one or two nodes goes into the chain, with no subnet.
 - In a network that the user gave you, the display and render flags are
   theirs: they decide what the network outputs (what a SOP Create gives the
-  stage). Leave them where they are. Show your result inside your subnet:
-  `select(paths=[<your node>], show=True)` opens it without moving their
-  flag.
+  stage). Leave them where they are. Show your result with
+  `select(paths=[<your node>], show=True)`, which opens it without moving
+  their flag.
 - With no node and no scene given, you choose the place: a new network named
   for the task (see Network order).
 
@@ -169,8 +179,17 @@ This is the procedural mode, the default. By hand: see How procedural.
   numbers (`@P.y < -0.3` breaks as soon as a size changes). Never paste the
   same wrangle twice: build it once and reuse its output. Inside the scene
   logic is VEX; Python is for files and the outside world.
+- Many like parts (buttons, bolts, the ticks of a dial, the keys of a
+  keyboard) are one part copied to points, never one node for each part. A
+  network of a hundred like nodes is a failure even when the model looks
+  right: nobody can change it.
 - One wrangle does one step (one sets the attributes, the next applies them),
   so the user can bypass and recombine them by hand.
+- A change the user asks for ("make the buttons square") replaces what was
+  there: change the node, or put the new one in its place in the chain and
+  delete the old one. Never leave the old version standing next to the new
+  one, wired to nothing. Keep two versions only when the user asks for
+  variants, and then behind a switch.
 - Work non-destructively: try a variant in a new branch through a switch,
   bypass instead of delete. Fix forward, one thing at a time. Before you delete
   a node, search the string parameters for references to it.
@@ -188,11 +207,21 @@ Network order
   block starts with an object_merge of that OUT_. No long trees, no wires
   across blocks.
 - Every block sits in a network box with a plain title of what it is
-  (`03_COLUMNS`, `04_TREES`, `07_FRACTURE`). Every node you create gets its
-  own place: lay out each batch of new nodes right after you build it, never
-  leave nodes at the origin or on top of each other. Before you finish, check
-  that no two nodes share a position and no node is outside a box
-  (`scene_file` save reports both as `layout_check`; it must be empty).
+  (`03_COLUMNS`, `04_TREES`, `07_FRACTURE`). One box for each block, and one
+  box for each title in a network. Before you make a box, look for a box with
+  that title (`network.networkBoxes()`, `box.comment()`) and add the nodes to
+  it; a box that ends up empty is deleted. A node can sit in one box only, so
+  a second box of the same block steals its nodes and leaves the first one
+  empty.
+- Every node you create gets its own place: lay out each batch of new nodes
+  right after you build it, never leave nodes at the origin or on top of each
+  other. The name is drawn to the right of a node: leave room for it, so no
+  neighbour covers it. Keep a block compact: about one node height between
+  linked nodes, no empty half of a box, and the box fit tight around its
+  nodes (`box.fitAroundContents()`) after each change. Before you finish, check that no two nodes or boxes overlap, no node
+  is outside a box, no box is empty, no node is left wired to nothing, and no two boxes or
+  subnets repeat each other (`scene_file` save reports all of it as `layout_check`; it must be
+  empty).
 - Colours: green OUT_, blue inputs and imports, yellow CTRL, purple caches,
   red broken, grey parked. Dot nodes only for long wires.
 - Write a comment on a node that reads another node by a path: a path has no

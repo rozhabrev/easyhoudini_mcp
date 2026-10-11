@@ -3,41 +3,16 @@ import json
 
 from mcp.types import ToolAnnotations
 
+from .. import structure
 from ..connection import call_json
 
 ANNOTATIONS = ToolAnnotations(destructiveHint=True)
 
 # The network order is checked in code, not only by a rule: in a test run an
-# agent stacked 27 nodes on one spot and made no network box at all.
-_LAYOUT_AUDIT = r'''
-import json, collections
-report = []
-for net in [hou.node("/obj"), hou.node("/stage")] + [n for n in hou.node("/").allSubChildren()
-            if n.isNetwork() and n.children() and n.type().category().name() in ("Object", "Lop")]:
-    if net is None or not net.isEditable() or net.isInsideLockedHDA():
-        continue
-    kids = [k for k in net.children() if k.type().name() not in ("subinput", "suboutput")]
-    if len(kids) < 4:
-        continue
-    pos = collections.Counter((round(k.position()[0], 1), round(k.position()[1], 1)) for k in kids)
-    stacked = sum(c for c in pos.values() if c > 1)
-    boxes_needed = net.childTypeCategory().name() in ("Sop", "Lop", "Cop")
-    unboxed = [k.name() for k in kids if boxes_needed and not k.parentNetworkBox()]
-    if stacked or unboxed:
-        report.append({"network": net.path(), "nodes": len(kids), "stacked": stacked,
-                       "outside_boxes": len(unboxed), "examples": unboxed[:5]})
-print(json.dumps(report))
-'''
-
-
+# agent stacked 27 nodes on one spot and made no network box at all, and in
+# 0.4 runs it left empty and repeated boxes and subnets (see bridge.structure).
 def _layout_check():
-    try:
-        out = json.loads(call_json("execute", {"source": _LAYOUT_AUDIT, "mode": "python",
-                                               "timeout": 30}, timeout=60.0))
-        text = out.get("stdout") or out.get("output") or ""
-        return json.loads(text.strip().splitlines()[-1]) if text.strip() else []
-    except Exception as error:  # the check must never break the save
-        return [{"error": str(error)}]
+    return structure.audit(layout=True)
 
 
 def tool(mode: str = "info", path: str = None) -> str:
@@ -51,8 +26,14 @@ def tool(mode: str = "info", path: str = None) -> str:
                  session has changes that are not saved.
         "save" — save to `path`, or over the open file when `path` is empty.
                  The answer has `layout_check`: networks with nodes stacked on
-                 one spot or left outside network boxes. Fix every entry
-                 before you call the work done (lay out, box, name).
+                 one spot, drawn over each other or left outside network boxes,
+                 boxes over each other, empty boxes, two
+                 boxes with one title, subnets that repeat or hold nothing,
+                 nodes left wired to nothing, boxes spread far wider than
+                 their nodes.
+                 Fix every entry before you call the work done (lay out, put
+                 into the box that is there, delete the empty and the
+                 repeated ones).
         "load" — open the .hip file at `path`. Everything in the session goes
                  away, and the undo history with it.
 
@@ -63,4 +44,14 @@ def tool(mode: str = "info", path: str = None) -> str:
         return result
     data = json.loads(result)
     data["layout_check"] = _layout_check()
+    if data["layout_check"]:
+        # A run read the report as a note about old work and answered with the
+        # new nodes still outside their box (11.10.2026).
+        data["layout_check_todo"] = (
+            "Fix every entry now, before you answer, and save again. Each entry is "
+            "nodes that you made (the ai prefix, OUT_), in this request or an earlier "
+            "one; the user's nodes are never listed. Put a node into the box of its "
+            "block, move overlapping nodes apart, fit a spread box around its nodes, "
+            "delete empty or repeated boxes and subnets and nodes wired to nothing. "
+            "Only when an entry is work the user asked you to keep, say so.")
     return json.dumps(data)
