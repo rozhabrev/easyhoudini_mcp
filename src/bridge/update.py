@@ -25,6 +25,12 @@ CHECK_EVERY = 24 * 3600
 TIMEOUT = 3.0
 CHANGES_LIMIT = 3000
 
+# Checked on Windows 11.10.2026: the package updates, only the launcher of the
+# running bridge stays, and that launcher starts the new code.
+WINDOWS_LOCK = ("On Windows the first part can end with \"Failed to install entrypoint ... "
+                "os error 32\": the running bridge holds its launcher. That is expected; the "
+                "package is updated, and the next start runs the new version.")
+
 _state = {"latest": None, "changes": "", "told_mismatch": False}
 
 
@@ -129,9 +135,13 @@ def install_command(session: dict, release: str = None) -> str:
     installer = f"{installer} {target} --harness none --yes".replace("  ", " ")
     if not release:
         return installer
-    fetch = (f'git -C "{clone}" pull' if clone else
-             f"uv tool install --force git+https://github.com/{REPOSITORY}@v{release}")
-    return f"{fetch} ; {installer}"
+    if clone:
+        return f'git -C "{clone}" pull ; {installer}'
+    # The installer runs from the new release through uvx: on Windows the
+    # launchers in the bin folder can stay old after the first command.
+    source = f"git+https://github.com/{REPOSITORY}@v{release}"
+    return (f"uv tool install --force {source} ; "
+            f"uvx --from {source} {installer}")
 
 
 def note(session: dict) -> str:
@@ -142,19 +152,14 @@ def note(session: dict) -> str:
     cache = _read_cache() if newer(latest) else {}
     if newer(latest) and cache.get("latest") == latest and time.time() - cache.get("told_at", 0) >= CHECK_EVERY:
         _write_cache({**cache, "told_at": time.time()})
-        windows = os.name == "nt"
         notes.append(
             f"A new release of this Houdini MCP is out: {latest}. This one is {__version__}. "
             f"Tell the user in their own language, with the main changes below in one or "
             f"two short lines, and ask if they want it. Do not update without a yes.\n"
             f"The update is one command; it updates the bridge and the plugin in Houdini:\n"
             f"    {install_command(session, latest)}\n"
-            + ("On Windows the running bridge holds its own files, so the command fails "
-               "while this AI client runs. Do not run it yourself. Give the user the "
-               "command: close this AI client, paste it into PowerShell, then start Houdini "
-               "and the client again.\n" if windows else
-               "After a yes, run it, then tell the user to restart Houdini and this AI "
-               "client.\n")
+            + f"After a yes, run it, then tell the user to restart Houdini and this AI "
+              f"client. {WINDOWS_LOCK}\n"
             + f"Changes: https://github.com/{REPOSITORY}/blob/main/CHANGELOG.md"
             + (f"\n\n{_state['changes']}" if _state["changes"] else ""))
     plugin = session.get("plugin")

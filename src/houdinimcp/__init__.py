@@ -9,7 +9,7 @@ from its own venv, outside Houdini.
 
 # The one version of the package. pyproject.toml reads it from here, and the
 # plugin reports it in every answer, so the bridge sees an old plugin copy.
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 
 
 def start_server():

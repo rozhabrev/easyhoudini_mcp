@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.3 - 2026-10-11
+
+### Changed
+- The update also runs on Windows while the AI client is open, so the agent
+  runs it after a yes on every system. Checked on Windows: `uv tool install
+  --force` ends with "Failed to install entrypoint ... os error 32" because the
+  running bridge holds its launcher, but the package is updated, and the old
+  launcher starts the new version. The installer now runs from the new release
+  through `uvx`, because the launchers can stay old.
+- README, How to update: one text to paste to your agent to update from 0.4.1
+  or older.
+
 ## 0.4.2 - 2026-10-11
 
 Users of 0.3 kept the subnet bug after 0.4.1 was out: nothing told them that a

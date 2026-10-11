@@ -25,9 +25,18 @@ That's it. The agent runs the installer, which adds the plugin to Houdini and th
 
 From 0.4.2 on, the MCP tells your agent when a new release is out, once a day at most. The agent tells you what changed and asks; nothing is downloaded until you say yes. It also tells you when the plugin in Houdini is an older copy than the server.
 
-**Have 0.4.1 or older? Update once by hand**, because those versions cannot tell you: close your AI client and run the install line again ([Manual install](#manual-install)), or ask your agent to "update the Houdini MCP from https://github.com/rozhabrev/easyhoudini_mcp". Then restart Houdini and the AI client.
+**On 0.4.1 or older?** Those versions cannot tell you. Update once: paste this to your agent.
 
-On Windows, the running server holds its own files, so the update runs with the AI client closed. The agent gives you the one line to paste into PowerShell. Set `HOUDINIMCP_NO_UPDATE_CHECK=1` to turn the check off.
+```
+Update the Houdini MCP to the latest version. Run these two commands, one after the other:
+uv tool install --force git+https://github.com/rozhabrev/easyhoudini_mcp
+uvx --from git+https://github.com/rozhabrev/easyhoudini_mcp houdinimcp-install --harness none --yes
+On Windows the first command can end with "Failed to install entrypoint ... os error 32". That is expected: the MCP is updated, only its running launcher is busy. Then tell me to restart Houdini and you.
+```
+
+Then restart Houdini and the AI client. To check, ask the agent for `session` status: `mcp_version` shows the bridge and the plugin.
+
+Set `HOUDINIMCP_NO_UPDATE_CHECK=1` to turn the check off.
 
 ## Why another Houdini MCP
 

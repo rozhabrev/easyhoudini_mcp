@@ -13,7 +13,6 @@ def update(tmp_path, monkeypatch):
     monkeypatch.delenv("HOUDINIMCP_NO_UPDATE_CHECK", raising=False)
     monkeypatch.setattr(update, "__version__", "0.4.2")
     monkeypatch.setattr(update, "_state", {"latest": None, "changes": "", "told_mismatch": False})
-    monkeypatch.setattr(update.os, "name", "posix")
     from bridge.onboarding import install
     monkeypatch.setattr(install, "repo_dir", lambda: None)
     return update
@@ -74,11 +73,12 @@ def test_a_new_release_is_told_once_a_day(update, monkeypatch):
     assert "0.5.0" in update.note({"plugin": "0.4.2"})
 
 
-def test_on_windows_the_agent_gives_the_command_to_the_user(update, monkeypatch):
+def test_the_installer_runs_from_the_new_release(update, monkeypatch):
     _github(update, monkeypatch, ["v0.5.0"])
-    monkeypatch.setattr(update.os, "name", "nt")
     update.check()
-    assert "Do not run it yourself" in update.note({"plugin": "0.4.2"})
+    text = update.note({"plugin": "0.4.2"})
+    assert "uvx --from git+https://github.com/rozhabrev/easyhoudini_mcp@v0.5.0 houdinimcp-install" in text
+    assert "os error 32" in text
 
 
 def test_no_note_when_this_is_the_latest(update, monkeypatch):
