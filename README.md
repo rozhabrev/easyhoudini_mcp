@@ -13,6 +13,8 @@ And it records a neat **timelapse** of every session, so afterwards you can sit 
 
 ## How to install
 
+Tested only on **Houdini 22**. Older versions are not recommended, purely for karma reasons: the agent and the Houdini console will gently remind you.
+
 Simply copy this line to the AI agent of your choice (Claude Code, Codex, Cursor, Gemini CLI, opencode, pi):
 
 ```

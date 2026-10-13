@@ -136,6 +136,10 @@ class HoudiniMCPServer:
         if hou.isUIAvailable():
             hou.ui.addEventLoopCallback(self._poll)
         print(f"HoudiniMCP server started on {self.host}:{self.port}")
+        if hou.applicationVersion()[0] != 22:
+            print(f"HoudiniMCP: this is Houdini {hou.applicationVersionString()}. "
+                  "The MCP is tested only on Houdini 22; older versions are not "
+                  "recommended, purely for karma reasons.")
 
     def serve_forever(self):
         """Run the calls from this thread. For hython, which has no event loop."""

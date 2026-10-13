@@ -31,7 +31,26 @@ WINDOWS_LOCK = ("On Windows the first part can end with \"Failed to install entr
                 "os error 32\": the running bridge holds its launcher. That is expected; the "
                 "package is updated, and the next start runs the new version.")
 
-_state = {"latest": None, "changes": "", "told_mismatch": False}
+_state = {"latest": None, "changes": "", "told_mismatch": False, "told_houdini": False}
+
+# The one Houdini major this MCP is tested on. The rules, the node names and the
+# docs inside are checked against it; older releases may work, nobody checked.
+SUPPORTED_HOUDINI = 22
+
+
+def houdini_warning(version: str) -> str:
+    """The warning for a Houdini that is not the tested major, or ""."""
+    try:
+        major = int((version or "").split(".")[0])
+    except ValueError:
+        return ""
+    if major == SUPPORTED_HOUDINI:
+        return ""
+    return (f"This Houdini is {version}. This MCP is tested only on Houdini "
+            f"{SUPPORTED_HOUDINI}: the rules, node names and docs inside are checked "
+            f"against it. Other versions are not recommended, purely for karma reasons: "
+            f"things may work, or may quietly not. Tell the user once, in their own "
+            f"language and with the same light tone, then go on with the task.")
 
 
 def version_tuple(text: str):
@@ -148,6 +167,10 @@ def note(session: dict) -> str:
     """The note for the next tool result, or "". The new release is told at
     most once a day, an old plugin copy once for each bridge process."""
     notes = []
+    warning = houdini_warning((session or {}).get("version"))
+    if warning and not _state["told_houdini"]:
+        _state["told_houdini"] = True
+        notes.append(warning)
     latest = _state["latest"]
     cache = _read_cache() if newer(latest) else {}
     if newer(latest) and cache.get("latest") == latest and time.time() - cache.get("told_at", 0) >= CHECK_EVERY:
@@ -184,7 +207,11 @@ def note(session: dict) -> str:
 def report(session: dict) -> dict:
     """The versions, for session action='status'."""
     found = {"bridge": __version__, "plugin": session.get("plugin") if session else None,
-             "latest_release": _state["latest"]}
+             "latest_release": _state["latest"],
+             "houdini_tested": SUPPORTED_HOUDINI}
+    warning = houdini_warning((session or {}).get("version"))
+    if warning:
+        found["houdini_warning"] = warning
     if newer(_state["latest"]):
         found["update"] = install_command(session or {}, _state["latest"])
     return found

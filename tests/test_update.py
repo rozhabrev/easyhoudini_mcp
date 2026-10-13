@@ -12,7 +12,8 @@ def update(tmp_path, monkeypatch):
     monkeypatch.setenv("HOUDINIMCP_HOME", str(tmp_path))
     monkeypatch.delenv("HOUDINIMCP_NO_UPDATE_CHECK", raising=False)
     monkeypatch.setattr(update, "__version__", "0.4.2")
-    monkeypatch.setattr(update, "_state", {"latest": None, "changes": "", "told_mismatch": False})
+    monkeypatch.setattr(update, "_state", {"latest": None, "changes": "", "told_mismatch": False,
+                                           "told_houdini": False})
     from bridge.onboarding import install
     monkeypatch.setattr(install, "repo_dir", lambda: None)
     return update
@@ -103,3 +104,15 @@ def test_a_clone_updates_with_git(update, monkeypatch):
     monkeypatch.setattr(install, "repo_dir", lambda: "/src/mcp")
     command = update.install_command({"plugin_prefs": "/p"}, "0.5.0")
     assert command.startswith('git -C "/src/mcp" pull ; uv --directory "/src/mcp" run')
+
+
+def test_a_houdini_other_than_22_is_told_once(update):
+    text = update.note({"version": "21.0.631", "plugin": "0.4.2"})
+    assert "tested only on Houdini 22" in text and "karma" in text
+    assert update.note({"version": "21.0.631", "plugin": "0.4.2"}) == ""
+    assert "houdini_warning" in update.report({"version": "20.5.410"})
+
+
+def test_houdini_22_says_nothing(update):
+    assert update.note({"version": "22.0.368", "plugin": "0.4.2"}) == ""
+    assert "houdini_warning" not in update.report({"version": "22.0.368"})

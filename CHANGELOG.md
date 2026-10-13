@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.4 - 2026-10-13
+
+### Added
+- This MCP is tested only on Houdini 22. In any other version the agent says so
+  once per session, and the Houdini console prints it at start: other versions
+  are not recommended, purely for karma reasons. Nothing is blocked.
+  `session action='status'` shows `houdini_tested` and the warning.
+
 ## 0.4.3 - 2026-10-11
 
 ### Changed
